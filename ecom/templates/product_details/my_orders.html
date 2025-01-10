@@ -1,0 +1,268 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="author" content="Untree.co">
+    <link rel="shortcut icon" href="{% static 'images/favicon.png' %}">
+
+    <meta name="description" content="" />
+    <meta name="keywords" content="bootstrap, bootstrap4, furniture, interior design" />
+
+    <!-- Bootstrap CSS -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'css/tiny-slider.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+
+    <title>Furni - Furniture and Interior Design</title>
+
+    <style>
+        .cart-section {
+            margin-top: 6%;
+        }
+
+        .cart-heading {
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .cart-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .cart-table th,
+        .cart-table td {
+            border: 1px solid #ddd;
+            padding: 15px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .product-image {
+            max-height: 130px;
+            width: auto;
+            display: block;
+            margin: auto;
+        }
+
+        .total-row {
+            font-weight: bold;
+        }
+
+        .cart-actions .btn {
+            margin: 5px;
+        }
+
+        .cart-item-count {
+            height: 100px;
+            background: rgb(77, 107, 107);
+            border-radius: 50%;
+            padding: 3px 6px;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-outline-black {
+            color: rgb(116, 57, 57);
+            border-radius: 50px;
+            width: 40px;
+        }
+
+        .quantity-container {
+            display: flex;
+            align-items: center;
+            justify-items: center;
+        }
+
+        .quantity-container button {
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 5px 10px;
+            background-color: #bdbebe;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .quantity-container .quantity {
+            width: 50%;
+            margin: 0 5px;
+        }
+
+        .user-initial {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background-color: #f8f9fa;
+            color: #343a40;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 32px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Start Header/Navigation -->
+    <header>
+        <nav class="custom-navbar navbar navbar-expand-md navbar-dark bg-dark" aria-label="Furni navigation bar">
+            <div class="container">
+                <a class="navbar-brand" href="{% url 'home_view' %}">Furni<span>.</span></a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni"
+                    aria-controls="navbarsFurni" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarsFurni">
+                    <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'home_view' %}">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'shop_view' %}">Shop</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'about_view' %}">About Us</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'contact' %}">Contact Us</a>
+                        </li>
+                    </ul>
+
+                    <ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
+                        {% if request.session.user_name %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="user-initial">
+                                    {{ request.session.user_name|slice:":1"|upper }}
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Settings</a></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                            </ul>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}" title="Login">
+                                <img src="{% static 'images/user.svg' %}">
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        <li class="nav-item icon">
+                            <a class="nav-link" href="{% url 'cart_view' %}" title="Cart">
+                                <img src="{% static 'images/cart.svg' %}" alt="Cart" class="icon">
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <!-- End Header/Navigation -->
+
+    <!-- Start Cart Section -->
+    {% block content %}
+    <h2>My Orders</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Status</th>
+                <th>Total Price</th>
+                <th>Date</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.id }}</td>
+                <td>{{ order.status }}</td>
+                <td>{{ order.total_price }}</td>
+                <td>{{ order.created_at }}</td>
+                <td><a href="{% url 'order_success' order.id %}">View Details</a></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No orders found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endblock %}
+
+    <!-- Start Footer Section -->
+    <section class="footer-section">
+        <div class="container relative">
+            <div class="sofa-img">
+                <img src="{% static 'images/sofa.png' %}" alt="Sofa" class="img-fluid">
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="subscription-form">
+                        <h3 class="d-flex align-items-center">
+                            <span class="me-1"><img src="{% static 'images/envelope-outline.svg' %}" alt="Envelope"
+                                    class="img-fluid"></span>
+                            <span>Subscribe to Newsletter</span>
+                        </h3>
+
+                        <form action="#" class="row g-3">
+                            <div class="col-auto">
+                                <input type="text" class="form-control" placeholder="Enter your name" required>
+                            </div>
+                            <div class="col-auto">
+                                <input type="email" class="form-control" placeholder="Enter your email" required>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-primary">
+                                    <span class="fa fa-paper-plane"></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-top copyright">
+                <div class="row pt-4">
+                    <div class="col-lg-6">
+                        <p class="mb-2 text-center text-lg-start">
+                            Copyright &copy;
+                            <script>document.write(new Date().getFullYear());</script>. All Rights Reserved. &mdash;
+                            Designed with love by <a href="https://untree.co">Untree.co</a> Distributed By <a
+                                href="https://themewagon.com">ThemeWagon</a>
+                        </p>
+                    </div>
+
+                    <div class="col-lg-6 text-center text-lg-end">
+                        <ul class="list-unstyled d-inline-flex ms-auto">
+                            <li class="me-4"><a href="#">Terms &amp; Conditions</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End Footer Section -->
+
+    <!-- JS Scripts -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/tiny-slider.js' %}"></script>
+    <script src="{% static 'js/custom.js' %}"></script>
+</body>
+
+</html>

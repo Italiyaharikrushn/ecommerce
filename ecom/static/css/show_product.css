@@ -1,0 +1,43 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+}
+
+.img-height {
+    height: 200px;
+    object-fit: cover;
+}
+
+.card {
+    height: 100%;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    padding: 10px;
+}
+
+.product-list .card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.product-list .card-title {
+    color: #007bff;
+    font-size: 20px;
+}
+
+.product-list .card-text {
+    color: #555;
+    font-size: 14px;
+    text-align: justify;
+}
+
+.product-list .fw-bold {
+    font-size: 16px;
+    color: #000;
+}

@@ -1,0 +1,188 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="author" content="Your Company Name">
+    <link rel="shortcut icon" href="{% static 'favicon.png' %}">
+    <meta name="description" content="Checkout Page with Google Pay Integration" />
+    <meta name="keywords" content="furniture, checkout, bootstrap, google pay, payment" />
+
+    <!-- Bootstrap CSS -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'css/tiny-slider.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+
+    <title>Furni - Checkout</title>
+
+    <style>
+        .user-initial {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background-color: #f8f9fa;
+            color: #343a40;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 32px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .google-pay-button {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Start Header/Navigation -->
+    <header>
+        <nav class="custom-navbar navbar navbar-expand-md navbar-dark bg-dark" aria-label="Furni navigation bar">
+            <div class="container">
+                <a class="navbar-brand" href="{% url 'home_view' %}">Furni<span>.</span></a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni"
+                    aria-controls="navbarsFurni" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarsFurni">
+                    <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
+                        <li class="nav-item"><a class="nav-link" href="{% url 'home_view' %}">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'shop_view' %}">Shop</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'about_view' %}">About Us</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">Contact Us</a></li>
+                    </ul>
+
+                    <ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
+                        {% if request.session.user_name %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="user-initial">{{ request.session.user_name|slice:":1"|upper }}</span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Settings</a></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                            </ul>
+                        </li>
+                        {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}" title="Login"><img src="{% static 'images/user.svg' %}"></a></li>
+                        {% endif %}
+
+                        <li class="nav-item icon">
+                            <a class="nav-link" href="{% url 'cart_view' %}" title="Cart"><img src="{% static 'images/cart.svg' %}" alt="Cart" class="icon"></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <!-- End Header/Navigation -->
+
+    <!-- Start Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row justify-content-between">
+                <div class="col-lg-5">
+                    <div class="intro-excerpt">
+                        <h1>Payment</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End Hero Section -->
+
+    <!-- Start Billing Section -->
+    {% block content %}
+    <section class="payment-section">
+        <div class="container my-4">
+            <form method="POST">
+                {% csrf_token %}
+                {% if error_message %}
+                    <div class="alert alert-danger">{{ error_message }}</div>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label for="payment_method">Select Payment Method</label>
+                    <select class="form-control" id="payment_method" name="payment_method">
+                        <option value="" disabled selected>-- Select Payment Method --</option>
+                        <option value="cod">Cash on Delivery</option>
+                    </select>
+                </div>
+    
+                <div id="google-pay-button-container" class="my-4"></div>
+
+                <button type="submit" class="btn btn-black my-4">Continue</button>
+            </form>
+        </div>
+    </section>
+    {% endblock %}
+    <!-- End Billing Section -->
+
+    <!-- Start Footer Section -->
+    <footer class="footer-section">
+        <div class="container relative">
+            <div class="sofa-img">
+                <img src="{% static 'images/sofa.png' %}" alt="Sofa" class="img-fluid">
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="subscription-form">
+                        <h3 class="d-flex align-items-center"><span class="me-1"><img
+                                    src="{% static 'images/envelope-outline.svg' %}" alt="Newsletter"
+                                    class="img-fluid"></span><span>Subscribe to Newsletter</span></h3>
+
+                        <form action="#" class="row g-3">
+                            <div class="col-auto">
+                                <input type="text" class="form-control" placeholder="Enter your name">
+                            </div>
+                            <div class="col-auto">
+                                <input type="email" class="form-control" placeholder="Enter your email">
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-primary">
+                                    <span class="fa fa-paper-plane"></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-top copyright">
+                <div class="row pt-4">
+                    <div class="col-lg-6">
+                        <p class="mb-2 text-center text-lg-start">Copyright &copy;
+                            <script>document.write(new Date().getFullYear());</script>. All Rights Reserved.
+                        </p>
+                    </div>
+
+                    <div class="col-lg-6 text-center text-lg-end">
+                        <ul class="list-unstyled d-inline-flex ms-auto">
+                            <li class="me-4"><a href="#">Terms & Conditions</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- End Footer Section -->
+
+    <script src="https://pay.google.com/gp/p/js/pay.js"></script>
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/tiny-slider.js' %}"></script>
+    <script src="{% static 'js/custom.js' %}"></script>
+</body>
+
+</html>
