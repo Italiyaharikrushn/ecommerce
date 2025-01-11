@@ -70,8 +70,10 @@
         /* Footer */
         footer {
             margin-top: auto;
-            background-color: #333;
-            color: #fff;
+            background-color: #dfdcdc;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
             padding: 10px 0;
             font-size: 0.85rem;
         }
@@ -136,10 +138,26 @@
     </section>
 
     <!-- Footer -->
-    <footer class="text-center py-3 bg-dark text-white">
-        <p>&copy;
-            <script>document.write(new Date().getFullYear());</script> Furni. All Rights Reserved.
-        </p>
+    <footer>
+        <div class="container">
+            <section>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <p class="mb-2 text-center text-lg-start">Copyright &copy;
+                            <script>document.write(new Date().getFullYear());</script>. All Rights Reserved. &mdash;
+                            Designed with love by <a href="https://untree.co">Untree.co</a> Distributed By <a
+                                href="https://themewagon.com">ThemeWagon</a>
+                        </p>
+                    </div>
+                    <div class="col-lg-6 text-center text-lg-end">
+                        <ul class="list-unstyled d-inline-flex ms-auto">
+                            <li class="me-4"><a href="#">Terms &amp; Conditions</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
     </footer>
 
     <!-- JS -->

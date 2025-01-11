@@ -843,8 +843,8 @@ a.more {
 }
 
 .footer-section {
-  padding: 80px 0;
-  background: #ffffff;
+  padding: 12px 0 !important;
+  background: #ffffff !important;
 }
 
 .footer-section .relative {
