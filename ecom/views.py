@@ -44,6 +44,7 @@ def register_customer(request):
 
     return render(request, "product_details/register.html")
 
+# Seller Registration
 @never_cache_custom
 @user
 def register_seller(request):
@@ -206,8 +207,10 @@ def logout(request):
     if user_role == UserRole.CUSTOMER:
         return redirect("home_view")
 
+    elif user_role == UserRole.SELLER_OWNER:
+        return redirect("login_seller")
     else:
-        return redirect("login")
+        return redirect("login_admin")
 
 # Home Page
 @never_cache_custom
