@@ -8,9 +8,95 @@ import json
 from django.db.models import F
 
 # User Registration
+# @never_cache_custom
+# @user
+# def register(request):
+#     if request.method == "POST":
+#         name = request.POST.get("name")
+#         email = request.POST.get("email")
+#         phone = request.POST.get("phone")
+#         password = request.POST.get("password")
+#         gender = request.POST.get("gender")
+#         age = request.POST.get("age")
+#         role = request.POST.get("role")
+
+#         if role not in [UserRole.CUSTOMER, UserRole.SELLER_OWNER, UserRole.ADMIN]:
+#             messages.error(request, "Invalid role selected.")
+#             return redirect("register")
+
+#         if User.objects.filter(email=email).exists():
+#             messages.error(request, "Email is already registered.")
+#             return render(
+#                 request,
+#                 "product_details/register.html",
+#                 {
+#                     "name": name,
+#                     "phone": phone,
+#                     "gender": gender,
+#                     "age": age,
+#                     "role": role,
+#                 },
+#             )
+
+#         hashed_password = make_password(password)
+
+#         user = User(
+#             name=name,
+#             email=email,
+#             phone=phone,
+#             password=hashed_password,
+#             gender=gender,
+#             age=age,
+#             role=role
+#         )
+#         user.save()
+
+#         messages.success(request, "Registration successful! Please log in.")
+
+#         return redirect("login")
+
+#     return render(request, "product_details/register.html")
+
+# # User Login
+# @never_cache_custom
+# @user
+# def login(request):
+#     if request.method == "POST":
+#         email = request.POST.get("email")
+#         password = request.POST.get("password")
+
+#         if not email or not password:
+#             messages.error(request, "Both email and password are required.")
+#             return render(request, "product_details/login.html")
+
+#         try:
+#             user = User.objects.get(email=email)
+#         except User.DoesNotExist:
+#             messages.error(request, "User not found.")
+#             return render(request, "product_details/login.html")
+
+#         if check_password(password, user.password):
+#             request.session["user_id"] = user.id
+#             request.session["user_name"] = user.name
+#             request.session["user_role"] = user.role
+            
+#             if user.role == UserRole.CUSTOMER:
+#                 messages.success(request, f"Welcome, {user.name}!")
+#                 return redirect("home_view")
+#             elif user.role == UserRole.SELLER_OWNER:
+#                 messages.success(request, f"Welcome, {user.name} (Seller Owner)!")
+#                 return redirect("seller_dashboard")
+#             elif user.role == UserRole.ADMIN:
+#                 messages.success(request, f"Welcome, {user.name} (Admin)!")
+#                 return redirect("admin_dashboard")
+
+#         messages.error(request, "Invalid email or password.")
+#     return render(request, "product_details/login.html")
+
+# User Registration
 @never_cache_custom
 @user
-def register(request):
+def register_customer(request):
     if request.method == "POST":
         name = request.POST.get("name")
         email = request.POST.get("email")
@@ -18,25 +104,15 @@ def register(request):
         password = request.POST.get("password")
         gender = request.POST.get("gender")
         age = request.POST.get("age")
-        role = request.POST.get("role")
 
-        if role not in [UserRole.CUSTOMER, UserRole.SELLER_OWNER, UserRole.ADMIN]:
-            messages.error(request, "Invalid role selected.")
-            return redirect("register")
-
-        if User.objects.filter(email=email).exists():
-            messages.error(request, "Email is already registered.")
-            return render(
-                request,
-                "product_details/register.html",
-                {
-                    "name": name,
-                    "phone": phone,
-                    "gender": gender,
-                    "age": age,
-                    "role": role,
-                },
-            )
+        if User.objects.filter(email=email, role=UserRole.CUSTOMER).exists():
+            messages.error(request, "Email is already registered as a Customer.")
+            return render(request, "product_details/register.html", {
+                "name": name,
+                "phone": phone,
+                "gender": gender,
+                "age": age,
+            })
 
         hashed_password = make_password(password)
 
@@ -47,20 +123,112 @@ def register(request):
             password=hashed_password,
             gender=gender,
             age=age,
-            role=role
+            role=UserRole.CUSTOMER
         )
         user.save()
 
-        messages.success(request, "Registration successful! Please log in.")
-
+        messages.success(request, "Customer registration successful! Please log in.")
         return redirect("login")
 
     return render(request, "product_details/register.html")
 
+# Seller Registration
+@never_cache_custom
+@user
+def register_seller(request):
+    if request.method == "POST":
+        # Get form data
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        password = request.POST.get("password")
+        gender = request.POST.get("gender")
+        age = request.POST.get("age")
+
+        # Validate age is numeric
+        if not age.isdigit() or int(age) < 18:
+            messages.error(request, "Age must be a number and at least 18.")
+            return render(request, "seller/register.html", {
+                "name": name,
+                "email": email,
+                "phone": phone,
+                "gender": gender,
+            })
+
+        # Check if the email is already registered as a seller
+        if User.objects.filter(email=email, role=UserRole.SELLER_OWNER).exists():
+            messages.error(request, "Email is already registered as a Seller.")
+            return render(request, "seller/register.html", {
+                "name": name,
+                "phone": phone,
+                "gender": gender,
+                "age": age,
+            })
+
+        # Hash the password
+        hashed_password = make_password(password)
+
+        # Create the seller with the explicit role
+        user = User(
+            name=name,
+            email=email,
+            phone=phone,
+            password=hashed_password,
+            gender=gender,
+            age=int(age),
+            role=UserRole.SELLER_OWNER  # Explicitly set the seller role
+        )
+        user.save()
+
+        # Success message and redirect
+        messages.success(request, "Seller registration successful! Please log in.")
+        return redirect("login_seller")
+
+    # Render the registration form
+    return render(request, "seller/register.html")
+# Admin Registration
+@never_cache_custom
+@user
+def register_admin(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        password = request.POST.get("password")
+        gender = request.POST.get("gender")
+        age = request.POST.get("age")
+
+        if User.objects.filter(email=email, role=UserRole.ADMIN).exists():
+            messages.error(request, "Email is already registered as an Admin.")
+            return render(request, "admin/register.html", {
+                "name": name,
+                "phone": phone,
+                "gender": gender,
+                "age": age,
+            })
+
+        hashed_password = make_password(password)
+
+        user = User(
+            name=name,
+            email=email,
+            phone=phone,
+            password=hashed_password,
+            gender=gender,
+            age=age,
+            role=UserRole.ADMIN
+        )
+        user.save()
+
+        messages.success(request, "Admin registration successful! Please log in.")
+        return redirect("login_admin")
+
+    return render(request, "admin/register.html")
+
 # User Login
 @never_cache_custom
 @user
-def login(request):
+def login_customer(request):
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
@@ -70,28 +238,79 @@ def login(request):
             return render(request, "product_details/login.html")
 
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(email=email, role=UserRole.CUSTOMER)
         except User.DoesNotExist:
-            messages.error(request, "User not found.")
+            messages.error(request, "Customer not found.")
             return render(request, "product_details/login.html")
 
         if check_password(password, user.password):
             request.session["user_id"] = user.id
             request.session["user_name"] = user.name
             request.session["user_role"] = user.role
-            
-            if user.role == UserRole.CUSTOMER:
-                messages.success(request, f"Welcome, {user.name}!")
-                return redirect("home_view")
-            elif user.role == UserRole.SELLER_OWNER:
-                messages.success(request, f"Welcome, {user.name} (Seller Owner)!")
-                return redirect("seller_dashboard")
-            elif user.role == UserRole.ADMIN:
-                messages.success(request, f"Welcome, {user.name} (Admin)!")
-                return redirect("admin_dashboard")
+
+            messages.success(request, f"Welcome, {user.name}!")
+            return redirect("home_view")
 
         messages.error(request, "Invalid email or password.")
     return render(request, "product_details/login.html")
+
+# Seller Login
+@never_cache_custom
+@user
+def login_seller(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        if not email or not password:
+            messages.error(request, "Both email and password are required.")
+            return render(request, "seller/login.html")
+
+        try:
+            user = User.objects.get(email=email, role=UserRole.SELLER_OWNER)
+        except User.DoesNotExist:
+            messages.error(request, "Seller not found.")
+            return render(request, "seller/login.html")
+
+        if check_password(password, user.password):
+            request.session["user_id"] = user.id
+            request.session["user_name"] = user.name
+            request.session["user_role"] = user.role
+
+            messages.success(request, f"Welcome, {user.name} (Seller Owner)!")
+            
+            return redirect("seller_dashboard")
+        messages.error(request, "Invalid email or password.")
+    return render(request, "seller/login.html")
+
+# Admin Login
+@never_cache_custom
+@user
+def login_admin(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        if not email or not password:
+            messages.error(request, "Both email and password are required.")
+            return render(request, "admin/login.html")
+
+        try:
+            user = User.objects.get(email=email, role=UserRole.ADMIN)
+        except User.DoesNotExist:
+            messages.error(request, "Admin not found.")
+            return render(request, "admin/login.html")
+
+        if check_password(password, user.password):
+            request.session["user_id"] = user.id
+            request.session["user_name"] = user.name
+            request.session["user_role"] = user.role
+
+            messages.success(request, f"Welcome, {user.name} (Admin)!")
+            return redirect("admin_dashboard")
+
+        messages.error(request, "Invalid email or password.")
+    return render(request, "admin/login.html")
 
 # User Logout
 def logout(request):
