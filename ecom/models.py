@@ -33,7 +33,6 @@ class User(models.Model):
     phone = models.CharField(max_length=14)
     password = models.CharField(max_length=255)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default="Other")
-    age = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(120)])
     role = models.CharField(max_length=21, choices=UserRole.choices)
 
     def __str__(self):
