@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
 from .models import Product, User, Contact, About, CartItem, Cart, Order, OrderItem, BillingAddress, Payment, UserRole
-from django.contrib import messages
 from django.contrib.auth.hashers import make_password, check_password
 from .utils import never_cache_custom, user, user_login_required
 from django.http import JsonResponse, HttpResponseNotAllowed
@@ -218,14 +217,17 @@ def home_view(request):
     products = Product.objects.all()
     return render(request, "product_details/index.html", {"products": products})
 
+# Seller dashboard
 @never_cache_custom
 def seller_dashboard(request):
     return render(request, "seller/dashboard.html")
 
+# Admin dashboard
 @never_cache_custom
 def admin_dashboard(request):
     return render(request, "admin/dashboard.html")
 
+#Add Product
 @never_cache_custom
 @user_login_required
 def add_product(request):
