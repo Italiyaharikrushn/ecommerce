@@ -120,7 +120,19 @@ def home_view(request):
 def seller_dashboard(request):
     if request.session.get("user_role") != UserRole.SELLER_OWNER:
         return redirect("login_seller")
-    return render(request, "seller/dashboard.html")
+    
+    user_id = request.session.get("user_id")
+    if user_id:
+        try:
+            user = User.objects.get(id=user_id)
+            name = user.name
+        
+        except User.DoesNotExist:
+            name = "Unknown User"
+    else:
+        name = "Guest"
+
+    return render(request, "seller/dashboard.html", {"name": name})
 
 
 @never_cache_custom

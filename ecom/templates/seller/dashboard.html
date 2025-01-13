@@ -1,37 +1,47 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
+    <!-- Metadata -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Seller Dashboard</title>
+
+    <!-- External Stylesheets -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+
     <style>
-        body {
-            background-color: #e2e2e6;
-        }
-
-        .sidebar {
-            height: 100vh;
-            background-color: #53575f;
-            color: white;
-        }
-
-        .sidebar a {
-            color: #adb5bd;
-        }
-
         a {
             text-decoration: none;
         }
 
-        .sidebar a:hover {
-            color: #ad8c8c;
+        .sidebar {
+            height: 100vh;
+            width: 300px;
+            background-color: #f0f0f0;
+            padding: 20px;
         }
 
-        .content {
-            padding: 20px;
+        .sidebar ul {
+            height: 100vh;
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li a {
+            text-decoration: none;
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar ul li a i {
+            margin-right: 10px;
         }
     </style>
 </head>
@@ -39,293 +49,192 @@
 <body>
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar -->
+            <!-- Sidebar Section -->
             <div class="col-md-3 col-lg-2 sidebar d-flex flex-column p-3">
-                <ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-2">
+                <!-- Header -->
+                <ul class="custom-navbar-cta navbar-nav">
                     <li class="nav-item dropdown">
                         <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="user-initial">
-                                <h3>Seller Dashboard</h3>
-                            </span>
+                            <h3>Seller Dashboard</h3>
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="#">Settings</a></li>
                             <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
                         </ul>
                     </li>
-                </ul>
-                <hr>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">Home</a>
-                    </li>
                     <hr>
-                    <li class="nav-item mb-3">
-                        <a href="#" class="nav-link">Orders</a>
-                    </li>
-                    <li class="nav-item mb-3">
-                        <a href="#" class="nav-link">Returns</a>
-                    </li>
-                    <li class="nav-item mb-3">
-                        <a href="#" class="nav-link">Pricing</a>
-                    </li>
-                    <li class="nav-item mb-3">
-                        <a href="#" class="nav-link">Claims</a>
-                    </li>
-                    <li class="nav-item mb-3">
-                        <a href="#" class="nav-link">Inventory</a>
-                    </li>
-                    <li class="nav-item mb-3">
-                        <a href="#" class="nav-link">Catelog Uploads</a>
-                    </li>
-                    <li class="nav-item mb-3">
-                        <a href="#" class="nav-link">Image Bulk Uploads</a>
-                    </li>
-                    <li class="nav-item mb-3">
-                        <a href="#" class="nav-link">Payments</a>
-                    </li>
-
-                    <li class="nav-item mb-3">
-                        <a href="#" class="nav-link">Influencer Marketing</a>
-                    </li>
-                    <li class="nav-item mb-3">
-                        <a href="#" class="nav-link">Advertisement</a>
-                    </li>
-                    <li class="nav-item mb-3">
-                        <a href="#" class="nav-link">Instant Cash</a>
-                    </li>
-                    <li class="nav-item mb-3">
-                        <a href="#" class="nav-link">Quality</a>
-                    </li>
+                    <li><a href="#"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="#"><i class="fas fa-shopping-cart"></i> Orders</a></li>
+                    <li><a href="#"><i class="fas fa-undo-alt"></i> Returns</a></li>
+                    <li><a href="#"><i class="fas fa-money-bill-alt"></i> Pricing</a></li>
+                    <li><a href="#"><i class="fas fa-file-invoice"></i> Claims</a></li>
+                    <li><a href="#"><i class="fas fa-boxes"></i> Inventory</a></li>
+                    <li><a href="#"><i class="fas fa-upload"></i> Catalog Uploads</a></li>
+                    <li><a href="#"><i class="fas fa-images"></i> Image Bulk Upload</a></li>
+                    <li><a href="#"><i class="fas fa-credit-card"></i> Payments</a></li>
+                    <li><a href="#"><i class="fas fa-warehouse"></i> Warehouse</a></li>
+                    <li><a href="#"><i class="fas fa-users"></i> Influencer Marketing</a></li>
+                    <li><a href="#"><i class="fas fa-bullhorn"></i> Advertisement</a></li>
+                    <li><a href="#"><i class="fas fa-percent"></i> Promotions</a></li>
+                    <li><a href="#"><i class="fas fa-coins"></i> Instant Cash</a></li>
+                    <li><a href="#"><i class="fas fa-balance-scale"></i> Quality</a></li>
                 </ul>
             </div>
 
-            <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 content">
-                <h2 class="mb-4">Welcome, Seller!</h2>
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="card mb-3">
-                            <a href="#" class="card-body">
-                                <h5 class="card-title">Panding Orders</h5>
-                                <p class="card-text"><strong>0 <i class="fa-solid fa-chevron-right"></i></strong></p>
-                                <!-- <a href="#" class="btn btn-light btn-sm">View Orders</a> -->
-                            </a>
+            <!-- Main Content Section -->
+            <main class="col-md-9 col-lg-10">
+                <div class="py-4">
+                    <!-- Welcome Section -->
+                    <header class="mb-4">
+                        <h2>Welcome Back, {{ name|upper }}!</h2>
+                    </header>
+
+                    <!-- Dashboard Cards -->
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="card">
+                                <a href="#" class="card-body text-center">
+                                    <h5 class="card-title">Pending Orders</h5>
+                                    <p class="card-text"><strong>0</strong></p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card">
+                                <a href="#" class="card-body text-center">
+                                    <h5 class="card-title">Download Label</h5>
+                                    <p class="card-text"><strong>0</strong></p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card">
+                                <a href="#" class="card-body text-center">
+                                    <h5 class="card-title">Out Of Stock</h5>
+                                    <p class="card-text"><strong>45</strong></p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card">
+                                <a href="#" class="card-body text-center">
+                                    <h5 class="card-title">Low Stock</h5>
+                                    <p class="card-text"><strong>0</strong></p>
+                                </a>
+                            </div>
                         </div>
                     </div>
-                    <!-- Earnings Card -->
-                    <div class="col-md-3">
-                        <div class="card mb-3">
-                            <a href="#" class="card-body">
-                                <h5 class="card-title">Download Label</h5>
-                                <p class="card-text"><strong>0 <i class="fa-solid fa-chevron-right"></i></strong></p>
-                                <!-- <a href="#" class="btn btn-light btn-sm">View Details</a> -->
-                            </a>
+
+                    <!-- Reports Section -->
+                    <section class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between dropdown">
+                                        <h5 class="card-title dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            Reports <span>/ Today</span></h5>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item" href="#">Today</a></li>
+                                            <li><a class="dropdown-item" href="#">This Month</a></li>
+                                            <li><a class="dropdown-item" href="#">This Year</a></li>
+                                        </ul>
+                                    </div>
+                                    <div id="reportsChart"></div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <!-- Products Card -->
-                    <div class="col-md-3">
-                        <div class="card mb-3">
-                            <a href="#" class="card-body">
-                                <h5 class="card-title">Out Of Stock</h5>
-                                <p class="card-text"><strong>45 <i class="fa-solid fa-chevron-right"></i></strong></p>
-                                <!-- <a href="#" class="btn btn-light btn-sm">Manage Products</a> -->
-                            </a>
+
+                        <!-- Secondary Cards -->
+                        <div class="col-md-6">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <a href="#" class="card-body text-center">
+                                            <h5 class="card-title">Views</h5>
+                                            <p class="card-text"><strong>0</strong></p>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <a href="#" class="card-body text-center">
+                                            <h5 class="card-title">Orders</h5>
+                                            <p class="card-text"><strong>0</strong></p>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <a href="#" class="card-body text-center">
+                                            <h5 class="card-title">In Stock Listings</h5>
+                                            <p class="card-text"><strong>45</strong></p>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <a href="#" class="card-body text-center">
+                                            <h5 class="card-title">Outstanding Payments</h5>
+                                            <p class="card-text"><strong>0</strong></p>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <!-- Earnings Card -->
-                    <div class="col-md-3">
-                        <div class="card mb-3">
-                            <a href="#" class="card-body">
-                                <h5 class="card-title">Low Stock</h5>
-                                <p class="card-text"><strong>0 <i class="fa-solid fa-chevron-right"></i></strong></p>
-                                <!-- <a href="#" class="btn btn-light btn-sm">View Details</a> -->
-                            </a>
-                        </div>
-                    </div>
+                    </section>
                 </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card">
-
-                            <div class="filter">
-                                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                    <li class="dropdown-header text-start">
-                                        <h6>Filter</h6>
-                                    </li>
-
-                                    <li><a class="dropdown-item" href="#">Today</a></li>
-                                    <li><a class="dropdown-item" href="#">This Month</a></li>
-                                    <li><a class="dropdown-item" href="#">This Year</a></li>
-                                </ul>
-                            </div>
-
-                            <div class="card-body">
-                                <h5 class="card-title">Reports <span>/Today</span></h5>
-
-                                <!-- Line Chart -->
-                                <div id="reportsChart"></div>
-
-                                <script>
-                                    document.addEventListener("DOMContentLoaded", () => {
-                                        new ApexCharts(document.querySelector("#reportsChart"), {
-                                            series: [{
-                                                name: 'Sales',
-                                                data: [31, 40, 28, 51, 42, 82, 56],
-                                            }, {
-                                                name: 'Revenue',
-                                                data: [11, 32, 45, 32, 34, 52, 41]
-                                            }, {
-                                                name: 'Customers',
-                                                data: [15, 11, 32, 18, 9, 24, 11]
-                                            }],
-                                            chart: {
-                                                height: 350,
-                                                type: 'area',
-                                                toolbar: {
-                                                    show: false
-                                                },
-                                            },
-                                            markers: {
-                                                size: 4
-                                            },
-                                            colors: ['#4154f1', '#2eca6a', '#ff771d'],
-                                            fill: {
-                                                type: "gradient",
-                                                gradient: {
-                                                    shadeIntensity: 1,
-                                                    opacityFrom: 0.3,
-                                                    opacityTo: 0.4,
-                                                    stops: [0, 90, 100]
-                                                }
-                                            },
-                                            dataLabels: {
-                                                enabled: false
-                                            },
-                                            stroke: {
-                                                curve: 'smooth',
-                                                width: 2
-                                            },
-                                            xaxis: {
-                                                type: 'datetime',
-                                                categories: ["2018-09-19T00:00:00.000Z", "2018-09-19T01:30:00.000Z", "2018-09-19T02:30:00.000Z", "2018-09-19T03:30:00.000Z", "2018-09-19T04:30:00.000Z", "2018-09-19T05:30:00.000Z", "2018-09-19T06:30:00.000Z"]
-                                            },
-                                            tooltip: {
-                                                x: {
-                                                    format: 'dd/MM/yy HH:mm'
-                                                },
-                                            }
-                                        }).render();
-                                    });
-                                </script>
-                                <!-- End Line Chart -->
-
-                            </div>
-
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <a href="#" class="card-body">
-                                        <h5 class="card-title">Panding Orders</h5>
-                                        <p class="card-text"><strong>0 <i class="fa-solid fa-chevron-right"></i></strong></p>
-                                        <!-- <a href="#" class="btn btn-light btn-sm">View Orders</a> -->
-                                    </a>
-                                </div>
-                            </div>
-                            <!-- Earnings Card -->
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <a href="#" class="card-body">
-                                        <h5 class="card-title">Download Label</h5>
-                                        <p class="card-text"><strong>0 <i class="fa-solid fa-chevron-right"></i></strong></p>
-                                        <!-- <a href="#" class="btn btn-light btn-sm">View Details</a> -->
-                                    </a>
-                                </div>
-                            </div>
-                            <!-- Products Card -->
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <a href="#" class="card-body">
-                                        <h5 class="card-title">Out Of Stock</h5>
-                                        <p class="card-text"><strong>45 <i class="fa-solid fa-chevron-right"></i></strong></p>
-                                        <!-- <a href="#" class="btn btn-light btn-sm">Manage Products</a> -->
-                                    </a>
-                                </div>
-                            </div>
-                            <!-- Earnings Card -->
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <a href="#" class="card-body">
-                                        <h5 class="card-title">Low Stock</h5>
-                                        <p class="card-text"><strong>0 <i class="fa-solid fa-chevron-right"></i></strong></p>
-                                        <!-- <a href="#" class="btn btn-light btn-sm">View Details</a> -->
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Table Section -->
-                <div class="mt-4">
-                    <h4>Recent Orders</h4>
-                    <table class="table table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>#</th>
-                                <th>Order ID</th>
-                                <th>Customer</th>
-                                <th>Status</th>
-                                <th>Total</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td>ORD12345</td>
-                                <td>John Doe</td>
-                                <td><span class="badge bg-success">Delivered</span></td>
-                                <td>$250</td>
-                                <td>
-                                    <a href="#" class="btn btn-primary btn-sm">View</a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>ORD12346</td>
-                                <td>Jane Smith</td>
-                                <td><span class="badge bg-warning">Pending</span></td>
-                                <td>$150</td>
-                                <td>
-                                    <a href="#" class="btn btn-primary btn-sm">View</a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td>ORD12347</td>
-                                <td>Bob Lee</td>
-                                <td><span class="badge bg-danger">Cancelled</span></td>
-                                <td>$80</td>
-                                <td>
-                                    <a href="#" class="btn btn-primary btn-sm">View</a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            </main>
         </div>
     </div>
 
+    <!-- External Scripts -->
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            new ApexCharts(document.querySelector("#reportsChart"), {
+                series: [{
+                    name: 'Sales',
+                    data: [31, 40, 28, 51, 42, 82, 56],
+                }, {
+                    name: 'Revenue',
+                    data: [11, 32, 45, 32, 34, 52, 41]
+                }, {
+                    name: 'Customers',
+                    data: [15, 11, 32, 18, 9, 24, 11]
+                }],
+                chart: { height: 350, type: 'area', toolbar: { show: false } },
+                markers: { size: 4 },
+                colors: ['#4154f1', '#2eca6a', '#ff771d'],
+                fill: {
+                    type: "gradient",
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.3,
+                        opacityTo: 0.4,
+                        stops: [0, 90, 100]
+                    }
+                },
+                dataLabels: { enabled: false },
+                stroke: { curve: 'smooth', width: 2 },
+                xaxis: {
+                    type: 'datetime',
+                    categories: [
+                        "2018-09-19T00:00:00.000Z",
+                        "2018-09-19T01:30:00.000Z",
+                        "2018-09-19T02:30:00.000Z",
+                        "2018-09-19T03:30:00.000Z",
+                        "2018-09-19T04:30:00.000Z",
+                        "2018-09-19T05:30:00.000Z",
+                        "2018-09-19T06:30:00.000Z"
+                    ]
+                },
+                tooltip: { x: { format: 'dd/MM/yy HH:mm' } }
+            }).render();
+        });
+    </script>
 </body>
 
 </html>
