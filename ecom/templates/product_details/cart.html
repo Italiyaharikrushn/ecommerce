@@ -8,8 +8,8 @@
     <meta name="author" content="Untree.co">
     <link rel="shortcut icon" href="{% static 'images/favicon.png' %}">
 
-    <meta name="description" content="" />
-    <meta name="keywords" content="bootstrap, bootstrap4, furniture, interior design" />
+    <meta name="description" content="Furniture and Interior Design Shop" />
+    <meta name="keywords" content="furniture, interior design, home decor, furniture shop" />
 
     <!-- Bootstrap CSS -->
     <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
@@ -20,6 +20,7 @@
     <title>Furni - Furniture and Interior Design</title>
 
     <style>
+        /* Cart Section Styles */
         .cart-section {
             margin-top: 6%;
         }
@@ -33,15 +34,11 @@
 
         .cart-table {
             width: 100%;
-            /* Ensure table takes full width */
             border-collapse: collapse;
-            /* Remove spacing between table cells */
         }
 
-        .cart-table th,
-        .cart-table td {
+        .cart-table th, .cart-table td {
             border: 1px solid #ddd;
-            /* Add table borders */
             padding: 15px;
             text-align: center;
             vertical-align: middle;
@@ -60,23 +57,6 @@
 
         .cart-actions .btn {
             margin: 5px;
-        }
-
-        .cart-item-count {
-            height: 100px;
-            background: rgb(77, 107, 107);
-            border-radius: 50%;
-            padding: 3px 6px;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .btn-outline-black {
-            color: rgb(116, 57, 57);
-            border-radius: 50px;
-            width: 40px;
         }
 
         .quantity-container {
@@ -244,48 +224,50 @@
         </div>
     </div>
     {% endblock %}
+    <!-- End Cart Section -->
 
     <!-- Start Footer Section -->
-    <section class="footer-section">
+    <footer class="footer-section">
         <div class="container relative">
-            <div class="sofa-img">
+            <!-- <figure class="sofa-img">
                 <img src="{% static 'images/sofa.png' %}" alt="Sofa" class="img-fluid">
-            </div>
+            </figure> -->
 
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="subscription-form">
-                        <h3 class="d-flex align-items-center">
-                            <span class="me-1"><img src="{% static 'images/envelope-outline.svg' %}" alt="Envelope"
-                                    class="img-fluid"></span>
-                            <span>Subscribe to Newsletter</span>
-                        </h3>
+            <!-- <section class="newsletter-subscription">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="subscription-form">
+                            <h3 class="d-flex align-items-center">
+                                <span class="me-1">
+                                    <img src="{% static 'images/envelope-outline.svg' %}" alt="Envelope Icon" class="img-fluid">
+                                </span>
+                                <span>Subscribe to Newsletter</span>
+                            </h3>
 
-                        <form action="#" class="row g-3">
-                            <div class="col-auto">
-                                <input type="text" class="form-control" placeholder="Enter your name" required>
-                            </div>
-                            <div class="col-auto">
-                                <input type="email" class="form-control" placeholder="Enter your email" required>
-                            </div>
-                            <div class="col-auto">
-                                <button class="btn btn-primary">
-                                    <span class="fa fa-paper-plane"></span>
-                                </button>
-                            </div>
-                        </form>
+                            <form action="#" class="row g-3">
+                                <div class="col-auto">
+                                    <input type="text" class="form-control" placeholder="Enter your name">
+                                </div>
+                                <div class="col-auto">
+                                    <input type="email" class="form-control" placeholder="Enter your email">
+                                </div>
+                                <div class="col-auto">
+                                    <button class="btn btn-primary">
+                                        <span class="fa fa-paper-plane"></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section> -->
 
-            <div class="border-top copyright">
+            <section class="footer-bottom border-top">
                 <div class="row pt-4">
                     <div class="col-lg-6">
-                        <p class="mb-2 text-center text-lg-start">
-                            Copyright &copy;
+                        <p class="mb-2 text-center text-lg-start">Copyright &copy;
                             <script>document.write(new Date().getFullYear());</script>. All Rights Reserved. &mdash;
-                            Designed with love by <a href="https://untree.co">Untree.co</a> Distributed By <a
-                                href="https://themewagon.com">ThemeWagon</a>
+                            Designed with love by <a href="https://untree.co">Untree.co</a> Distributed By <a href="https://themewagon.com">ThemeWagon</a>
                         </p>
                     </div>
 
@@ -296,9 +278,9 @@
                         </ul>
                     </div>
                 </div>
-            </div>
+            </section>
         </div>
-    </section>
+    </footer>
     <!-- End Footer Section -->
 
     <!-- JS Scripts -->
@@ -307,6 +289,7 @@
     <script src="{% static 'js/custom.js' %}"></script>
 
     <script>
+        // Handling quantity changes
         document.querySelectorAll('.decrease, .increase').forEach(function (button) {
             button.addEventListener('click', function () {
                 const itemId = this.getAttribute('data-item-id');
