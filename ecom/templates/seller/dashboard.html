@@ -15,6 +15,7 @@
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
 
     <style>
+        /* General Styles */
         body,
         html {
             margin: 0;
@@ -27,8 +28,7 @@
         /* Sidebar Styles */
         .sidebar {
             height: 100vh;
-            width: 300px;
-            /* background-color: #f8f9fa; */
+            width: 290px;
             background-color: #343a40;
             padding: 5px;
             position: fixed;
@@ -43,14 +43,13 @@
         }
 
         .sidebar ul li {
-            margin: 6px 0;
+            margin: 3px 0;
         }
 
         .sidebar ul li a {
             display: flex;
             align-items: center;
             text-decoration: none;
-            /* color: #333; */
             color: #fff;
             padding: 10px 15px;
             display: block;
@@ -59,15 +58,8 @@
         }
 
         .sidebar ul li a:hover {
-            /* background-color: #e9ecef; */
             background-color: #495057;
             color: #007bff;
-        }
-
-        .content {
-            margin-left: 250px;
-            padding: 20px;
-            flex-grow: 1;
         }
 
         .sidebar ul li a i {
@@ -131,6 +123,8 @@
         .dropdown-menu {
             border-radius: 5px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #63696e;
+            color: #3c3e41;
         }
 
         .dropdown-menu a {
@@ -139,11 +133,6 @@
             display: block;
             text-decoration: none;
             transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        .dropdown-menu a:hover {
-            background-color: #e9ecef;
-            color: #007bff;
         }
 
         /* Chart Styles */
@@ -157,8 +146,8 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar Section -->
-            <div class="sidebar">
-                <ul class="custom-navbar-cta navbar-nav">
+            <nav class="sidebar">
+                <ul class="navbar-nav">
                     <li class="nav-item dropdown">
                         <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <h3>Seller Dashboard</h3>
@@ -175,7 +164,7 @@
                     <li><a href="#"><i class="fas fa-money-bill-alt"></i> Pricing</a></li>
                     <li><a href="#"><i class="fas fa-file-invoice"></i> Claims</a></li>
                     <li><a href="{% url 'product_list' %}"><i class="fas fa-boxes"></i> Inventory</a></li>
-                    <li><a href="{% url 'add_product' %}"><i class="fas fa-upload"></i> Catalog Uploads</a></li>
+                    <li><a href="{% url 'add_product' %}"><i class="fas fa-upload"></i> Add Product</a></li>
                     <li><a href="#"><i class="fas fa-images"></i> Image Bulk Upload</a></li>
                     <li><a href="#"><i class="fas fa-credit-card"></i> Payments</a></li>
                     <li><a href="#"><i class="fas fa-warehouse"></i> Warehouse</a></li>
@@ -185,113 +174,112 @@
                     <li><a href="#"><i class="fas fa-coins"></i> Instant Cash</a></li>
                     <li><a href="#"><i class="fas fa-balance-scale"></i> Quality</a></li>
                 </ul>
-            </div>
+            </nav>
 
             <!-- Main Content Section -->
             <main class="col-md-9 col-lg-10">
-                <div class="">
-                    <!-- Welcome Section -->
-                    <header class="mb-4">
-                        <h2>Welcome Back, {{ name|upper }}!</h2>
-                    </header>
+                <header class="mb-4">
+                    <h2>Welcome Back, {{ name|upper }}!</h2>
+                </header>
 
-                    <!-- Dashboard Cards -->
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <div class="card">
-                                <a href="#" class="card-body text-center">
-                                    <h5 class="card-title">Pending Orders</h5>
-                                    <p class="card-text"><strong>0</strong></p>
-                                </a>
-                            </div>
+                <!-- Dashboard Cards -->
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="card">
+                            <a href="#" class="card-body text-center">
+                                <h5 class="card-title">Pending Orders</h5>
+                                <p class="card-text"><strong>0</strong></p>
+                            </a>
                         </div>
-                        <div class="col-md-3">
-                            <div class="card">
-                                <a href="#" class="card-body text-center">
-                                    <h5 class="card-title">Download Label</h5>
-                                    <p class="card-text"><strong>0</strong></p>
-                                </a>
-                            </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <a href="#" class="card-body text-center">
+                                <h5 class="card-title">Download Label</h5>
+                                <p class="card-text"><strong>0</strong></p>
+                            </a>
                         </div>
-                        <div class="col-md-3">
-                            <div class="card">
-                                <a href="#" class="card-body text-center">
-                                    <h5 class="card-title">Out Of Stock</h5>
-                                    <p class="card-text"><strong>0</strong></p>
-                                </a>
-                            </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <a href="#" class="card-body text-center">
+                                <h5 class="card-title">Out Of Stock</h5>
+                                <p class="card-text"><strong>0</strong></p>
+                            </a>
                         </div>
-                        <div class="col-md-3">
-                            <div class="card">
-                                <a href="#" class="card-body text-center">
-                                    <h5 class="card-title">Low Stock</h5>
-                                    <p class="card-text"><strong>0</strong></p>
-                                </a>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <a href="#" class="card-body text-center">
+                                <h5 class="card-title">Low Stock</h5>
+                                <p class="card-text"><strong>0</strong></p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Section -->
+                <section class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between dropdown">
+                                    <h5 class="card-title dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        Reports <span>/ Today</span>
+                                    </h5>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="#">Today</a></li>
+                                        <li><a class="dropdown-item" href="#">This Month</a></li>
+                                        <li><a class="dropdown-item" href="#">This Year</a></li>
+                                    </ul>
+                                </div>
+                                <div id="reportsChart"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Reports Section -->
-                    <section class="row mt-4">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between dropdown">
-                                        <h5 class="card-title dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                            Reports <span>/ Today</span></h5>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><a class="dropdown-item" href="#">Today</a></li>
-                                            <li><a class="dropdown-item" href="#">This Month</a></li>
-                                            <li><a class="dropdown-item" href="#">This Year</a></li>
-                                        </ul>
-                                    </div>
-                                    <div id="reportsChart"></div>
+                    <!-- Secondary Cards -->
+                    <div class="col-md-6">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <a href="#" class="card-body text-center">
+                                        <h5 class="card-title">Views</h5>
+                                        <p class="card-text"><strong>0</strong></p>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <a href="#" class="card-body text-center">
+                                        <h5 class="card-title">Orders</h5>
+                                        <p class="card-text"><strong>0</strong></p>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <a href="#" class="card-body text-center">
+                                        <h5 class="card-title">In Stock Listings</h5>
+                                        <p class="card-text"><strong>0</strong></p>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <a href="#" class="card-body text-center">
+                                        <h5 class="card-title">Outstanding Payments</h5>
+                                        <p class="card-text"><strong>0</strong></p>
+                                    </a>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Secondary Cards -->
-                        <div class="col-md-6">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="card">
-                                        <a href="#" class="card-body text-center">
-                                            <h5 class="card-title">Views</h5>
-                                            <p class="card-text"><strong>0</strong></p>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="card">
-                                        <a href="#" class="card-body text-center">
-                                            <h5 class="card-title">Orders</h5>
-                                            <p class="card-text"><strong>0</strong></p>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="card">
-                                        <a href="#" class="card-body text-center">
-                                            <h5 class="card-title">In Stock Listings</h5>
-                                            <p class="card-text"><strong>0</strong></p>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="card">
-                                        <a href="#" class="card-body text-center">
-                                            <h5 class="card-title">Outstanding Payments</h5>
-                                            <p class="card-text"><strong>0</strong></p>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                </div>
+                    </div>
+                </section>
             </main>
         </div>
     </div>
+
 
     <!-- External Scripts -->
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
