@@ -15,7 +15,6 @@ def register_user(request, role, template, redirect_url):
         password = request.POST.get("password")
         gender = request.POST.get("gender")
 
-        # Check if the user already exists
         if User.objects.filter(email=email, role=role).exists():
             context = {
                 "name": name,
@@ -25,7 +24,6 @@ def register_user(request, role, template, redirect_url):
             }
             return render(request, template, context)
 
-        # Create and save the user
         hashed_password = make_password(password)
         User.objects.create(
             name=name, email=email, phone=phone, 
@@ -134,13 +132,11 @@ def seller_dashboard(request):
 
     return render(request, "seller/dashboard.html", {"name": name})
 
-
 @never_cache_custom
 def customer_dashboard(request):
     if request.session.get("user_role") != UserRole.CUSTOMER:
         return redirect("login")
     return render(request, "product_details/index.html")
-
 
 @never_cache_custom
 def admin_dashboard(request):
@@ -156,15 +152,27 @@ def add_product(request):
         price = request.POST.get("price")
         image = request.FILES.get("image")
 
-        Product.objects.create(
-            product_name=product_name,
-            description=description,
-            price=price,
-            image=image,
-        )
-        return redirect("home_view")
+        try:
+            price = float(price)
+            if price < 0:
+                return render(request, "seller/add_product.html")
 
-    return render(request, "product_details/add_product.html")
+            Product.objects.create(
+                product_name=product_name,
+                description=description,
+                price=price,
+                image=image,
+            )
+            return redirect("product_list")
+
+        except ValueError:
+            return render(request, "seller/add_product.html")
+
+    return render(request, "seller/add_product.html")
+
+def product_list(request):
+    products = Product.objects.all()
+    return render(request, "seller/product_list.html", {"products": products})
 
 # Shop view
 @never_cache_custom

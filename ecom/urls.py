@@ -26,7 +26,8 @@ urlpatterns = [
     path("about/", views.about_view, name="about_view"),
 
     # Products
-    path("add_product/", views.add_product, name="add_product"),
+    path('add-product/', views.add_product, name='add_product'),
+    path('product-list/', views.product_list, name='product_list'),
     path("shop/", views.shop_view, name="shop_view"),
 
     # Contact

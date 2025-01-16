@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        /* General Reset */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        /* Container Styling */
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #444;
+        }
+
+        /* Form Fields */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        input[type="file"] {
+            width: -webkit-fill-available;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #333;
+            background-color: #f9f9f9;
+            margin-top: 5px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Submit Button */
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #5cb85c;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #4cae4c;
+        }
+
+        /* Link Styling */
+        .view-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .view-link a {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: #5cb85c;
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 4px;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .view-link a:hover {
+            background-color: #4cae4c;
+            text-decoration: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            button,
+            .view-link a {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        {% block content %}
+        <div class="container">
+            <h1>Add a New Product</h1>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_product_name">Product Name:</label>
+                    <input type="text" id="id_product_name" name="product_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="id_description">Description:</label>
+                    <textarea id="id_description" name="description" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="id_price">Price:</label>
+                    <input type="number" id="id_price" name="price" step="10" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="id_image">Image:</label>
+                    <input type="file" id="id_image" name="image">
+                </div>
+                <button type="submit">Add Product</button>
+            </form>
+        </div>
+
+        <div class="container view-link">
+            <a href="{% url 'product_list' %}">View Products</a>
+        </div>
+        {% endblock %}
+    </div>
+</body>
+
+</html>

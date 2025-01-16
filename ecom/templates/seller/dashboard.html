@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -16,32 +15,140 @@
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
 
     <style>
-        a {
-            text-decoration: none;
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
         }
 
+        /* Sidebar Styles */
         .sidebar {
             height: 100vh;
             width: 300px;
-            background-color: #f0f0f0;
-            padding: 20px;
+            /* background-color: #f8f9fa; */
+            background-color: #343a40;
+            padding: 5px;
+            position: fixed;
+            overflow-y: auto;
+            border-right: 1px solid #ddd;
         }
 
         .sidebar ul {
-            height: 100vh;
             list-style: none;
             padding: 0;
+            margin: 0;
+        }
+
+        .sidebar ul li {
+            margin: 6px 0;
         }
 
         .sidebar ul li a {
-            text-decoration: none;
-            color: #333;
             display: flex;
             align-items: center;
+            text-decoration: none;
+            /* color: #333; */
+            color: #fff;
+            padding: 10px 15px;
+            display: block;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .sidebar ul li a:hover {
+            /* background-color: #e9ecef; */
+            background-color: #495057;
+            color: #007bff;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            flex-grow: 1;
         }
 
         .sidebar ul li a i {
             margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        /* Main Content Styles */
+        main {
+            margin-left: 300px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        header {
+            margin-bottom: 20px;
+        }
+
+        header h2 {
+            font-size: 2rem;
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* Card Styles */
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+
+        .card a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card a:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+            color: #007bff;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .card-text {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        /* Dropdown Menu */
+        .dropdown-menu {
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .dropdown-menu a {
+            color: #333;
+            padding: 10px 15px;
+            display: block;
+            text-decoration: none;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #e9ecef;
+            color: #007bff;
+        }
+
+        /* Chart Styles */
+        #reportsChart {
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -50,8 +157,7 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar Section -->
-            <div class="col-md-3 col-lg-2 sidebar d-flex flex-column p-3">
-                <!-- Header -->
+            <div class="sidebar">
                 <ul class="custom-navbar-cta navbar-nav">
                     <li class="nav-item dropdown">
                         <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -68,8 +174,8 @@
                     <li><a href="#"><i class="fas fa-undo-alt"></i> Returns</a></li>
                     <li><a href="#"><i class="fas fa-money-bill-alt"></i> Pricing</a></li>
                     <li><a href="#"><i class="fas fa-file-invoice"></i> Claims</a></li>
-                    <li><a href="#"><i class="fas fa-boxes"></i> Inventory</a></li>
-                    <li><a href="#"><i class="fas fa-upload"></i> Catalog Uploads</a></li>
+                    <li><a href="{% url 'product_list' %}"><i class="fas fa-boxes"></i> Inventory</a></li>
+                    <li><a href="{% url 'add_product' %}"><i class="fas fa-upload"></i> Catalog Uploads</a></li>
                     <li><a href="#"><i class="fas fa-images"></i> Image Bulk Upload</a></li>
                     <li><a href="#"><i class="fas fa-credit-card"></i> Payments</a></li>
                     <li><a href="#"><i class="fas fa-warehouse"></i> Warehouse</a></li>
@@ -83,7 +189,7 @@
 
             <!-- Main Content Section -->
             <main class="col-md-9 col-lg-10">
-                <div class="py-4">
+                <div class="">
                     <!-- Welcome Section -->
                     <header class="mb-4">
                         <h2>Welcome Back, {{ name|upper }}!</h2>
@@ -111,7 +217,7 @@
                             <div class="card">
                                 <a href="#" class="card-body text-center">
                                     <h5 class="card-title">Out Of Stock</h5>
-                                    <p class="card-text"><strong>45</strong></p>
+                                    <p class="card-text"><strong>0</strong></p>
                                 </a>
                             </div>
                         </div>
@@ -167,7 +273,7 @@
                                     <div class="card">
                                         <a href="#" class="card-body text-center">
                                             <h5 class="card-title">In Stock Listings</h5>
-                                            <p class="card-text"><strong>45</strong></p>
+                                            <p class="card-text"><strong>0</strong></p>
                                         </a>
                                     </div>
                                 </div>
