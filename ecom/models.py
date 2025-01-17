@@ -1,6 +1,6 @@
 import uuid
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator
 
 def get_image_upload_to(instance, filename):
     ext = filename.split(".")[-1]
@@ -11,15 +11,6 @@ class UserRole(models.TextChoices):
     CUSTOMER = 'ROLE_CUSTOMER', 'Customer'
     SELLER_OWNER = 'ROLE_SELLER_OWNER', 'Seller Owner'
     ADMIN = 'ROLE_ADMIN', 'Admin'
-
-class Product(models.Model):
-    product_name = models.CharField(max_length=100)
-    description = models.TextField()
-    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
-    image = models.ImageField(upload_to=get_image_upload_to, blank=True, null=True)
-
-    def __str__(self):
-        return self.product_name
 
 class User(models.Model):
     GENDER_CHOICES = [
@@ -42,6 +33,16 @@ class User(models.Model):
         if not self.phone.startswith("+91-"):
             self.phone = f"+91-{self.phone}"
         super().save(*args, **kwargs)
+
+class Product(models.Model):
+    seller = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': UserRole.SELLER_OWNER})
+    product_name = models.CharField(max_length=100)
+    description = models.TextField()
+    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    image = models.ImageField(upload_to=get_image_upload_to, blank=True, null=True)
+
+    def __str__(self):
+        return self.product_name
 
 class Contact(models.Model):
     name = models.CharField(max_length=100)

@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Product</title>
+    <title>Supplier Panel</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <style>
         /* General Reset */
@@ -15,6 +15,106 @@
             padding: 0;
             background-color: #f4f4f9;
             color: #333;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            height: 100vh;
+            width: 290px;
+            background-color: #343a40;
+            padding: 5px;
+            position: fixed;
+            overflow-y: auto;
+            border-right: 1px solid #ddd;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar ul li {
+            margin: 3px 0;
+        }
+
+        .sidebar ul li a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #fff;
+            padding: 10px 15px;
+            display: block;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .sidebar ul li a:hover {
+            background-color: #495057;
+            color: #6f7780;
+        }
+
+        .sidebar ul li a i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        /* Dropdown Menu */
+        .dropdown-menu {
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #63696e;
+            color: #3c3e41;
+        }
+
+        .dropdown-menu a {
+            color: #faf4f42c;
+            padding: 10px 15px;
+            display: block;
+            text-decoration: none;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Card Styles */
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+
+        .card a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card a:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+            color: #414e5c;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .card-text {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        /* Main Content Styles */
+        main {
+            margin-left: 300px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            height: 95.7vh;
         }
 
         /* Container Styling */
@@ -106,52 +206,112 @@
             text-decoration: none;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
+        header {
+            margin-bottom: 20px;
+        }
 
-            button,
-            .view-link a {
-                padding: 10px;
-            }
+        header h2 {
+            font-size: 2rem;
+            color: #333;
+            font-weight: bold;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        {% block content %}
-        <div class="container">
-            <h1>Add a New Product</h1>
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="id_product_name">Product Name:</label>
-                    <input type="text" id="id_product_name" name="product_name" required>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar Section -->
+            <nav class="sidebar">
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <h3>Seller Dashboard</h3>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Settings</a></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                        </ul>
+                    </li>
+                    <hr>
+                    <li><a href="{% url 'seller_dashboard' %}"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="#"><i class="fas fa-shopping-cart"></i> Orders</a></li>
+                    <li><a href="#"><i class="fas fa-undo-alt"></i> Returns</a></li>
+                    <li><a href="#"><i class="fas fa-money-bill-alt"></i> Pricing</a></li>
+                    <li><a href="#"><i class="fas fa-file-invoice"></i> Claims</a></li>
+                    <li><a href="{% url 'product_list' %}"><i class="fas fa-boxes"></i> Inventory</a></li>
+                    <li><a href="{% url 'add_product' %}"><i class="fas fa-upload"></i> Add Product</a></li>
+                    <li><a href="#"><i class="fas fa-images"></i> Image Bulk Upload</a></li>
+                    <li><a href="#"><i class="fas fa-credit-card"></i> Payments</a></li>
+                    <li><a href="#"><i class="fas fa-warehouse"></i> Warehouse</a></li>
+                    <li><a href="#"><i class="fas fa-users"></i> Influencer Marketing</a></li>
+                    <li><a href="#"><i class="fas fa-bullhorn"></i> Advertisement</a></li>
+                    <li><a href="#"><i class="fas fa-percent"></i> Promotions</a></li>
+                    <li><a href="#"><i class="fas fa-coins"></i> Instant Cash</a></li>
+                    <li><a href="#"><i class="fas fa-balance-scale"></i> Quality</a></li>
+                </ul>
+            </nav>
+
+            <main class="col-md-9 col-lg-10">
+                <div class="container">
+                    <h1>Add a New Product</h1>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="id_product_name">Product Name:</label>
+                            <input type="text" id="id_product_name" name="product_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_description">Description:</label>
+                            <textarea id="id_description" name="description" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_price">Price:</label>
+                            <input type="number" id="id_price" name="price" step="10" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_image">Image:</label>
+                            <input type="file" id="id_image" name="image">
+                        </div>
+                        <button type="submit">Add Product</button>
+                    </form>
+
+                    <div class="view-link">
+                        <a href="{% url 'product_list' %}">View Products</a>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="id_description">Description:</label>
-                    <textarea id="id_description" name="description" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="id_price">Price:</label>
-                    <input type="number" id="id_price" name="price" step="10" min="0" required>
-                </div>
-                <div class="form-group">
-                    <label for="id_image">Image:</label>
-                    <input type="file" id="id_image" name="image">
-                </div>
-                <button type="submit">Add Product</button>
-            </form>
+            </main>
         </div>
+    </div>
+    <!-- <div class="container">
+        {% block content %}
+        <h1>Add a New Product</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_product_name">Product Name:</label>
+                <input type="text" id="id_product_name" name="product_name" required>
+            </div>
+            <div class="form-group">
+                <label for="id_description">Description:</label>
+                <textarea id="id_description" name="description" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="id_price">Price:</label>
+                <input type="number" id="id_price" name="price" step="10" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="id_image">Image:</label>
+                <input type="file" id="id_image" name="image">
+            </div>
+            <button type="submit">Add Product</button>
+        </form>
 
         <div class="container view-link">
             <a href="{% url 'product_list' %}">View Products</a>
         </div>
         {% endblock %}
-    </div>
+    </div> -->
 </body>
 
 </html>
