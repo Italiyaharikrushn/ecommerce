@@ -6,10 +6,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supplier Panel</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <!-- External Stylesheets -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+
     <style>
         /* General Reset */
-        body {
+        body,
+        html {
             font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
@@ -215,7 +221,64 @@
             color: #333;
             font-weight: bold;
         }
+
+        /* Responsive Styles */
+        @media (max-width: 1024px) {
+
+            /* Adjust Sidebar */
+            .sidebar {
+                width: 240px;
+            }
+
+            main {
+                margin-left: 250px;
+            }
+        }
+
+        @media (max-width: 768px) {
+
+            /* Stack Sidebar and Main */
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            main {
+                margin-left: 0;
+                margin-top: 20px;
+            }
+
+            .container {
+                max-width: 90%;
+            }
+        }
+
+        @media (max-width: 480px) {
+
+            /* Simplify Styles for Small Screens */
+            .sidebar ul li a {
+                font-size: 0.9rem;
+                padding: 8px 12px;
+            }
+
+            h1,
+            header h2 {
+                font-size: 1.5rem;
+            }
+
+            .card-title {
+                font-size: 1rem;
+            }
+
+            button,
+            .view-link a {
+                font-size: 0.9rem;
+                padding: 10px;
+            }
+        }
     </style>
+
 </head>
 
 <body>
@@ -226,7 +289,7 @@
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
                         <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <h3>Seller Dashboard</h3>
+                            <h3>{{ name|upper }}</h3>
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="#">Settings</a></li>
@@ -276,42 +339,15 @@
                         <button type="submit">Add Product</button>
                     </form>
 
-                    <div class="view-link">
-                        <a href="{% url 'product_list' %}">View Products</a>
-                    </div>
                 </div>
             </main>
         </div>
     </div>
-    <!-- <div class="container">
-        {% block content %}
-        <h1>Add a New Product</h1>
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="id_product_name">Product Name:</label>
-                <input type="text" id="id_product_name" name="product_name" required>
-            </div>
-            <div class="form-group">
-                <label for="id_description">Description:</label>
-                <textarea id="id_description" name="description" required></textarea>
-            </div>
-            <div class="form-group">
-                <label for="id_price">Price:</label>
-                <input type="number" id="id_price" name="price" step="10" min="0" required>
-            </div>
-            <div class="form-group">
-                <label for="id_image">Image:</label>
-                <input type="file" id="id_image" name="image">
-            </div>
-            <button type="submit">Add Product</button>
-        </form>
 
-        <div class="container view-link">
-            <a href="{% url 'product_list' %}">View Products</a>
-        </div>
-        {% endblock %}
-    </div> -->
+    <!-- External Scripts -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </body>
 
 </html>

@@ -155,18 +155,26 @@ def add_product(request):
     if request.session.get("user_role") != UserRole.SELLER_OWNER:
         return redirect("login_seller")
 
+    user_id = request.session.get("user_id")
+
+    try:
+        # Retrieve the user object and store the name
+        user = User.objects.get(id=user_id)
+        name = user.name  # Now we can use the user's name in the template
+    except User.DoesNotExist:
+        raise PermissionDenied("User not found.")
+
     if request.method == "POST":
         product_name = request.POST.get("product_name", "").strip()
         description = request.POST.get("description", "").strip()
         price = request.POST.get("price", "").strip()
         image = request.FILES.get("image")
-        user_id = request.session.get("user_id")
 
         if not product_name or not description or not price or not image:
             return render(
                 request,
                 "seller/add_product.html",
-                {"error": "All fields are required."}
+                {"error": "All fields are required.", "name": name}
             )
 
         try:
@@ -189,28 +197,37 @@ def add_product(request):
             return render(
                 request,
                 "seller/add_product.html",
-                {"error": "Price must be a valid positive number."}
+                {"error": "Price must be a valid positive number.", "name": name}
             )
         except ObjectDoesNotExist:
             return render(
                 request,
                 "seller/add_product.html",
-                {"error": "Seller account not found or unauthorized."}
+                {"error": "Seller account not found or unauthorized.", "name": name}
             )
         except Exception as e:
             return render(
                 request,
                 "seller/add_product.html",
-                {"error": f"An unexpected error occurred: {e}"}
+                {"error": f"An unexpected error occurred: {e}", "name": name}
             )
 
-    return render(request, "seller/add_product.html")
+    return render(request, "seller/add_product.html", {"name": name})
 
 @never_cache_custom
 @user_login_required
 def product_list(request):
     user_role = request.session.get("user_role")
     user_id = request.session.get("user_id")
+
+    if not user_id:
+        raise PermissionDenied("You are not logged in.")
+
+    try:
+        user = User.objects.get(id=user_id)
+        name = user.name
+    except User.DoesNotExist:
+        raise PermissionDenied("User not found.")
 
     if user_role == UserRole.SELLER_OWNER:
         products = Product.objects.filter(seller_id=user_id)
@@ -219,7 +236,7 @@ def product_list(request):
     else:
         raise PermissionDenied("You do not have permission to view this page.")
 
-    return render(request, "seller/product_list.html", {"products": products})
+    return render(request, "seller/product_list.html", {"products": products, "name": name})
 
 # Shop view
 @never_cache_custom
