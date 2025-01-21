@@ -118,7 +118,6 @@ class Order(models.Model):
         self.save()
 
     def order_details(self):
-        # Retrieve details of each order item
         order_items = self.order_items.all()
         return [
             {
