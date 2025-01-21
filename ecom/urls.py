@@ -21,13 +21,18 @@ urlpatterns = [
 
     # Home and About
     path("", views.home_view, name="home_view"),
-    path("seller/dashboard/", views.seller_dashboard, name="seller_dashboard"),
-    path("admin/dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("about/", views.about_view, name="about_view"),
 
+    # Seller URLs
+    path("seller/dashboard/", views.seller_dashboard, name="seller_dashboard"),
+    path("seller/add-product/", views.add_product, name="add_product"),
+    path("seller/product-list/", views.product_list, name="product_list"),
+    path("seller/orders/", views.view_orders, name="view_orders"),
+
+    # Admin Dashboard
+    path("admin/dashboard/", views.admin_dashboard, name="admin_dashboard"),
+
     # Products
-    path('add-product/', views.add_product, name='add_product'),
-    path('product-list/', views.product_list, name='product_list'),
     path("shop/", views.shop_view, name="shop_view"),
 
     # Contact
@@ -45,9 +50,10 @@ urlpatterns = [
     # Payment
     path("payment/<int:order_id>/", views.payment_view, name="payment_view"),
 
-    # Order
+    # Order Success
     path("order-success/<int:order_id>/", views.order_success, name="order_success"),
 ]
 
+# Serving media files in debug mode
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

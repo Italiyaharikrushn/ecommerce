@@ -7,6 +7,28 @@ import json
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import PermissionDenied
 from django.db.models import F
+from django.core.mail import send_mail
+
+def notify_sellers(order):
+    seller_orders = {}
+    for item in order.order_items.all():
+        seller = item.product.seller
+        if seller not in seller_orders:
+            seller_orders[seller] = []
+        seller_orders[seller].append(item)
+
+    for seller, items in seller_orders.items():
+        product_details = "\n".join(
+            [f"{item.quantity} x {item.product.product_name} (${item.total_price()})" for item in items]
+        )
+        email_subject = f"New Order Notification - Order #{order.id}"
+        email_body = f"Dear {seller.name},\n\nYou have a new order. Here are the details:\n\n{product_details}\n\nThank you."
+        send_mail(
+            subject=email_subject,
+            message=email_body,
+            from_email="no-reply@example.com",
+            recipient_list=[seller.email],
+        )
 
 # Helper function to handle user registration
 def register_user(request, role, template, redirect_url):
@@ -36,7 +58,6 @@ def register_user(request, role, template, redirect_url):
 
     return render(request, template)
 
-# Registration views for different roles
 @never_cache_custom
 @user
 def register_customer(request):
@@ -126,17 +147,66 @@ def seller_dashboard(request):
         return redirect("login_seller")
 
     try:
-        user = User.objects.get(id=user_id)
-        name = user.name
+        seller = User.objects.get(id=user_id, role=UserRole.SELLER_OWNER)
     except User.DoesNotExist:
-        name = "Unknown User"
+        raise PermissionDenied("Seller not found.")
 
     seller_products = Product.objects.filter(seller_id=user_id)
 
+    order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related('order', 'product')
+    seller_orders = {}
+
+    for item in order_items:
+        order_id = item.order.id
+        if order_id not in seller_orders:
+            seller_orders[order_id] = {
+                "order": item.order,
+                "items": [],
+                "total_price": 0,
+            }
+        seller_orders[order_id]["items"].append(item)
+        seller_orders[order_id]["total_price"] += item.product.price * item.quantity
+
     return render(request, "seller/dashboard.html", {
-        "name": name,
-        "products": seller_products
+        "name": seller.name,
+        "products": seller_products,
+        "orders": seller_orders.values(),
     })
+
+# def seller_dashboard(request):
+#     if request.session.get("user_role") != UserRole.SELLER_OWNER:
+#         return redirect("login_seller")
+
+#     user_id = request.session.get("user_id")
+#     if not user_id:
+#         return redirect("login_seller")
+
+#     try:
+#         user = User.objects.get(id=user_id)
+#         name = user.name
+#     except User.DoesNotExist:
+#         name = "Unknown User"
+#         raise PermissionDenied("User not found.")
+
+#     seller_products = Product.objects.filter(seller_id=user_id)
+#     order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related('order', 'product')
+
+#     orders = {}
+#     for item in order_items:
+#         if item.order.id not in orders:
+#             orders[item.order.id] = {
+#                 "order": item.order,
+#                 "items": [],
+#                 "total_price": 0,
+#             }
+#         orders[item.order.id]["items"].append(item)
+#         orders[item.order.id]["total_price"] += item.product.price * item.quantity
+
+#     return render(request, "seller/dashboard.html", {
+#         "name": name,
+#         "products": seller_products,
+#         "orders": orders.values(),
+#     })
 
 @never_cache_custom
 def customer_dashboard(request):
@@ -156,11 +226,11 @@ def add_product(request):
         return redirect("login_seller")
 
     user_id = request.session.get("user_id")
+    seller = User.objects.get(id=user_id, role=UserRole.SELLER_OWNER)
 
     try:
-        # Retrieve the user object and store the name
         user = User.objects.get(id=user_id)
-        name = user.name  # Now we can use the user's name in the template
+        name = user.name
     except User.DoesNotExist:
         raise PermissionDenied("User not found.")
 
@@ -170,12 +240,8 @@ def add_product(request):
         price = request.POST.get("price", "").strip()
         image = request.FILES.get("image")
 
-        if not product_name or not description or not price or not image:
-            return render(
-                request,
-                "seller/add_product.html",
-                {"error": "All fields are required.", "name": name}
-            )
+        if not all([product_name, description, price, image]):
+            return render(request, "seller/add_product.html", {"error": "All fields are required."})
 
         try:
             price = float(price)
@@ -219,6 +285,7 @@ def add_product(request):
 def product_list(request):
     user_role = request.session.get("user_role")
     user_id = request.session.get("user_id")
+    products = Product.objects.filter(seller_id=user_id)
 
     if not user_id:
         raise PermissionDenied("You are not logged in.")
@@ -351,10 +418,13 @@ def checkout(request):
         billing_address.save()
 
         order = Order.objects.create(user_id=user_id, total_price=cart.total_price())
-        OrderItem.objects.bulk_create([
+        order_items = [
             OrderItem(order=order, product=item.product, quantity=item.quantity)
             for item in cart.cart_items.all()
-        ])
+        ]
+        OrderItem.objects.bulk_create(order_items)
+
+        notify_sellers(order)
 
         cart.cart_items.all().delete()
         return redirect("payment_view", order_id=order.id)
@@ -363,6 +433,34 @@ def checkout(request):
         "cart": cart, "billing_address": billing_address,
         "total_price": cart.total_price(),
     })
+# def checkout(request):
+#     user_id = request.session["user_id"]
+#     cart = Cart.objects.filter(user_id=user_id).first()
+
+#     if not cart:
+#         return redirect("shop_view")
+
+#     billing_address, _ = BillingAddress.objects.get_or_create(user_id=user_id)
+
+#     if request.method == "POST":
+#         fields = ["fullname", "street_address", "city", "state", "pin_code", "country", "contact_number"]
+#         for field in fields:
+#             setattr(billing_address, field, request.POST.get(field))
+#         billing_address.save()
+
+#         order = Order.objects.create(user_id=user_id, total_price=cart.total_price())
+#         OrderItem.objects.bulk_create([
+#             OrderItem(order=order, product=item.product, quantity=item.quantity)
+#             for item in cart.cart_items.all()
+#         ])
+
+#         cart.cart_items.all().delete()
+#         return redirect("payment_view", order_id=order.id)
+
+#     return render(request, "product_details/checkout.html", {
+#         "cart": cart, "billing_address": billing_address,
+#         "total_price": cart.total_price(),
+#     })
 
 # Payment view
 @never_cache_custom
@@ -388,8 +486,42 @@ def payment_view(request, order_id):
 # Order success view
 def order_success(request, order_id):
     try:
-        order = Order.objects.get(id=order_id)
+        order = Order.objects.prefetch_related('order_items__product__seller').get(id=order_id)
     except Order.DoesNotExist:
         return redirect("home_view")
 
-    return render(request, "product_details/thankyou.html", {"order": order})
+    return render(
+        request,
+        "product_details/thankyou.html",
+        {"order": order, "seller": order.order_items.first().product.seller},
+    )
+
+def view_orders(request):
+    user_id = request.session.get("user_id")
+    
+    if request.session.get("user_role") != UserRole.SELLER_OWNER:
+        return redirect("login_seller")
+
+    try:
+        seller = User.objects.get(id=user_id, role=UserRole.SELLER_OWNER)
+    except User.DoesNotExist:
+        raise PermissionDenied("Seller not found.")
+
+    order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related('order', 'product')
+    orders = {}
+
+    for item in order_items:
+        order_id = item.order.id
+        if order_id not in orders:
+            orders[order_id] = {
+                "order": item.order,
+                "items": [],
+                "total_price": 0,
+            }
+        orders[order_id]["items"].append(item)
+        orders[order_id]["total_price"] += item.product.price * item.quantity
+
+    return render(request, "seller/order.html", {
+        "name": seller.name,
+        "orders": orders.values(),
+    })

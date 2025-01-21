@@ -229,7 +229,7 @@
                     </li>
                     <hr>
                     <li><a href="{% url 'seller_dashboard' %}"><i class="fas fa-home"></i> Home</a></li>
-                    <li><a href="#"><i class="fas fa-shopping-cart"></i> Orders</a></li>
+                    <li><a href="{% url 'view_orders' %}"><i class="fas fa-shopping-cart"></i> Orders</a></li>
                     <li><a href="#"><i class="fas fa-undo-alt"></i> Returns</a></li>
                     <li><a href="#"><i class="fas fa-money-bill-alt"></i> Pricing</a></li>
                     <li><a href="#"><i class="fas fa-file-invoice"></i> Claims</a></li>
@@ -402,3 +402,221 @@
 </body>
 
 </html>
+
+<style>
+    /* Global Styles */
+    body,
+    html {
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f9;
+        color: #333;
+    }
+
+    .container-fluid {
+        padding: 0;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+        height: 100vh;
+        width: 250px;
+        background-color: #343a40;
+        padding-top: 20px;
+        position: fixed;
+        overflow-y: auto;
+        border-right: 1px solid #ddd;
+    }
+
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar ul li {
+        margin: 10px 0;
+    }
+
+    .sidebar ul li a {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .sidebar ul li a:hover {
+        background-color: #495057;
+        color: #f1f1f1;
+    }
+
+    .sidebar ul li a i {
+        margin-right: 15px;
+        font-size: 1.2rem;
+    }
+
+    /* Main Content */
+    main {
+        margin-left: 250px;
+        padding: 20px;
+        background-color: #f5f5f5;
+        height: 100vh;
+    }
+
+    /* Order Section Styles */
+    .filter-section {
+        background: #fff;
+        padding: 15px;
+        border: 1px solid #ddd;
+        margin-bottom: 20px;
+        border-radius: 8px;
+    }
+
+    .filter-section select,
+    .filter-section input {
+        margin-right: 15px;
+        border: 1px solid #ddd;
+        padding: 8px 10px;
+        border-radius: 4px;
+    }
+
+    .orders-section {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .order-card {
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        background-color: #f9f9f9;
+    }
+
+    .order-card h5 {
+        font-size: 1.25rem;
+        margin-bottom: 10px;
+    }
+
+    .order-card p {
+        font-size: 1rem;
+        color: #555;
+        margin-bottom: 5px;
+    }
+
+    .no-orders {
+        text-align: center;
+        color: #888;
+        margin-top: 50px;
+    }
+
+    img {
+        width: 150px;
+        height: 150px;
+        margin-bottom: 20px;
+    }
+
+    .no-orders h5 {
+        font-size: 18px;
+        color: #555;
+    }
+
+    .no-orders p {
+        font-size: 14px;
+        color: #777;
+    }
+
+    /* Orders Grid Layout */
+    .orders-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .order-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .order-item img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        margin-bottom: 10px;
+    }
+
+    .order-item p {
+        margin-bottom: 5px;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 1024px) {
+        .sidebar {
+            width: 220px;
+        }
+
+        main {
+            margin-left: 220px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            position: relative;
+            height: auto;
+        }
+
+        main {
+            margin-left: 0;
+            margin-top: 20px;
+        }
+
+        .container {
+            max-width: 90%;
+        }
+
+        .sidebar ul li a {
+            font-size: 0.9rem;
+            padding: 8px 12px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .sidebar {
+            width: 100%;
+            position: relative;
+            height: auto;
+        }
+
+        main {
+            margin-left: 0;
+            margin-top: 20px;
+        }
+
+        .order-card h5 {
+            font-size: 1rem;
+        }
+
+        .order-card p {
+            font-size: 0.9rem;
+        }
+
+        .no-orders h5 {
+            font-size: 16px;
+        }
+
+        .no-orders p {
+            font-size: 12px;
+        }
+    }
+</style>

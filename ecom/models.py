@@ -109,8 +109,6 @@ class Order(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default="Pending")
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
@@ -120,6 +118,21 @@ class Order(models.Model):
     def calculate_total_price(self):
         self.total_price = sum(item.total_price() for item in self.order_items.all())
         self.save()
+
+    def order_details(self):
+        # Retrieve details of each order item
+        order_items = self.order_items.all()
+        return [
+            {
+                "product_name": item.product.product_name,
+                "image": item.product.image.url if item.product.image else None,
+                "quantity": item.quantity,
+                "total_price": item.total_price(),
+                "date_added": item.date_added,
+                "customer_name": self.user.name,
+            }
+            for item in order_items
+        ]
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="order_items")
