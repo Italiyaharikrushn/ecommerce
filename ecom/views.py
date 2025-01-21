@@ -9,6 +9,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import F
 from django.core.mail import send_mail
 
+# Notify sellers about new order
 def notify_sellers(order):
     seller_orders = {}
     for item in order.order_items.all():
@@ -58,6 +59,7 @@ def register_user(request, role, template, redirect_url):
 
     return render(request, template)
 
+# Views for user roles (Customer, Seller, Admin)
 @never_cache_custom
 @user
 def register_customer(request):
