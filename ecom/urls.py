@@ -34,6 +34,8 @@ urlpatterns = [
 
     # Products
     path("shop/", views.shop_view, name="shop_view"),
+    path("delete_product/<int:product_id>/", views.delete_product, name="delete_product"),
+    path("update_product/<int:product_id>/", views.update_product, name="update_product"),
 
     # Contact
     path("contact/", views.contact, name="contact"),
@@ -51,6 +53,8 @@ urlpatterns = [
     path("payment/<int:order_id>/", views.payment_view, name="payment_view"),
 
     # Order Success
+    # path("orders/cancel/<int:item_id>/", views.cancel_order_item, name="cancel_order_item"),
+    path("orders/cancel/<int:item_id>/", views.cancel_order_item, name="cancel_order_item"),
     path("order-success/<int:order_id>/", views.order_success, name="order_success"),
 ]
 

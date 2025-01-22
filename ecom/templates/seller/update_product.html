@@ -26,7 +26,7 @@
         /* Sidebar Styles */
         .sidebar {
             height: 100vh;
-            width: 290px;
+            width: 300px;
             background-color: #343a40;
             padding: 5px;
             position: fixed;
@@ -69,12 +69,12 @@
         .dropdown{
             width: 100%;
         }
+        
         .dropdown-menu {
             border-radius: 5px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             background-color: #63696e;
             color: #3c3e41;
-            width: 100%;
         }
 
         .dropdown-menu a {
@@ -85,7 +85,6 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* .dropdown-menu ul */
         /* Card Styles */
         .card {
             border: none;
@@ -179,7 +178,7 @@
         /* Submit Button */
         button {
             display: block;
-            width: 100%;
+            /* width: 100%; */
             padding: 12px;
             background-color: #5cb85c;
             border: none;
@@ -283,20 +282,20 @@
             }
         }
     </style>
-
 </head>
 
 <body>
+
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar Section -->
-            <nav class="sidebar">
+            <!-- Sidebar -->
+            <nav class="sidebar col-md-3 col-lg-2">
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
                         <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <h3 class="text-white dropdown-toggle">{{ name|upper }}</h3>
                         </a>
-                        <ul class="dropdown-menu" style="width: 100%;">
+                        <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="#">Settings</a></li>
                             <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
                         </ul>
@@ -320,39 +319,44 @@
                 </ul>
             </nav>
 
+            <!-- Main Content -->
             <main class="col-md-9 col-lg-10">
                 <div class="container">
-                    <h1>Add a New Product</h1>
-                    <form method="post" enctype="multipart/form-data">
+                    <h2 class="mb-4">Update Product</h2>
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
                         {% csrf_token %}
-                        <div class="form-group">
-                            <label for="id_product_name">Product Name:</label>
-                            <input type="text" id="id_product_name" name="product_name" required>
+                        <div class="mb-3">
+                            <label for="product_name">Product Name</label>
+                            <input type="text" id="product_name" name="product_name" class="form-control"
+                                value="{{ product.product_name }}" required>
                         </div>
-                        <div class="form-group">
-                            <label for="id_description">Description:</label>
-                            <textarea id="id_description" name="description" required></textarea>
+                        <div class="mb-3">
+                            <label for="description">Description</label>
+                            <textarea id="description" name="description" class="form-control" rows="4"
+                                required>{{ product.description }}</textarea>
                         </div>
-                        <div class="form-group">
-                            <label for="id_price">Price:</label>
-                            <input type="number" id="id_price" name="price" step="10" min="0" required>
+                        <div class="mb-3">
+                            <label for="price">Price (₹)</label>
+                            <input type="number" id="price" name="price" class="form-control"
+                                value="{{ product.price }}" step="0.01" min="0" required>
                         </div>
-                        <div class="form-group">
-                            <label for="id_image">Image:</label>
-                            <input type="file" id="id_image" name="image">
+                        <div class="mb-3">
+                            <label for="image">Product Image</label>
+                            <input type="file" id="image" name="image" class="form-control">
+                            <small class="text-muted">Leave blank to retain the current image.</small>
                         </div>
-                        <button type="submit">Add Product</button>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="submit" class="btn btn-primary">Update Product</button>
+                            <a href="{% url 'product_list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
                     </form>
-
                 </div>
             </main>
         </div>
     </div>
 
     <!-- External Scripts -->
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </body>
 
 </html>

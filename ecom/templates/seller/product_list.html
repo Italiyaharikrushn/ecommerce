@@ -1,4 +1,3 @@
-<!-- product_list.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -124,7 +123,11 @@
             font-weight: bold;
         }
     
-        /* Dropdown Menu */
+       /* Dropdown Menu */
+       .dropdown{
+            width: 100%;
+        }
+        
         .dropdown-menu {
             border-radius: 5px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -189,18 +192,17 @@
             }
         }
     </style>
-    
 </head>
 
 <body>
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar Section -->
-            <nav class="sidebar">
+            <nav class="sidebar col-md-3 col-lg-2 bg-dark text-white p-3">
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
                         <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <h3>{{ name|upper }}</h3>
+                            <h3 class="text-white dropdown-toggle">{{ name|upper }}</h3>
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="#">Settings</a></li>
@@ -227,30 +229,81 @@
             </nav>
 
             <!-- Main Content Section -->
-            <main class="col-md-9 col-lg-10">
-                <div class="container">
-                    <h1>Product List</h1>
-                    <div class="product-list">
-                        {% for product in products %}
-                        <div class="product-item">
+            <main class="col-md-9 col-lg-10 p-4">
+                <!-- <h1 class="text-center mb-4">Product List</h1>
+                <div class="row g-4">
+                    {% for product in products %}
+                    <div class="col-sm-6 col-md-4 col-lg-3">
+                        <div class="card">
                             {% if product.image %}
-                            <img src="{{ product.image.url }}" alt="{{ product.product_name }}" class="product-image">
+                            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.product_name }}">
+                            {% else %}
+                            <img src="{% static 'images/default_product.png' %}" class="card-img-top"
+                                alt="Default Product">
                             {% endif %}
-                            <div class="product-name">{{ product.product_name }}</div>
-                            <div class="product-description">{{ product.description }}</div>
-                            <div class="product-price">₹{{ product.price }}</div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ product.product_name }}</h5>
+                                <p class="card-text">{{ product.description }}</p>
+                                <p class="text-success fw-bold">₹{{ product.price }}</p>
+                            </div>
                         </div>
-                        {% endfor %}
                     </div>
+                    {% endfor %}
+                </div> -->
+
+                <h1 class="text-center mb-4">Product List</h1>
+
+                {% if products %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-dark text-center">
+                            <tr>
+                                <th scope="col">Image</th>
+                                <th scope="col">Product Name</th>
+                                <th scope="col">Price</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr>
+                                <td class="text-center">
+                                    {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.product_name }}"
+                                        class="img-thumbnail" style="width: 50px; height: 50px;">
+                                    {% else %}
+                                    <img src="{% static 'images/default_product.png' %}" alt="Default Product"
+                                        class="img-thumbnail" style="width: 50px; height: 50px;">
+                                    {% endif %}
+                                </td>
+                                <td>{{ product.product_name }}</td>
+                                <td>₹{{ product.price }}</td>
+                                <td>{{ product.description }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'delete_product' product.id %}" class="text-danger me-4">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </a>
+                                    <a href="{% url 'update_product' product.id %}" class="text-success">
+                                        <i class="fa-regular fa-pen-to-square"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
+                {% else %}
+                <div class="text-center mt-3">
+                    <p class="text-muted">No products found.</p>
+                </div>
+                {% endif %}
             </main>
         </div>
     </div>
 
     <!-- External Scripts -->
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </body>
 
 </html>

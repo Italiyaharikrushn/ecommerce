@@ -117,24 +117,17 @@ class Order(models.Model):
         self.total_price = sum(item.total_price() for item in self.order_items.all())
         self.save()
 
-    def order_details(self):
-        order_items = self.order_items.all()
-        return [
-            {
-                "product_name": item.product.product_name,
-                "image": item.product.image.url if item.product.image else None,
-                "quantity": item.quantity,
-                "total_price": item.total_price(),
-                "date_added": item.date_added,
-                "customer_name": self.user.name,
-            }
-            for item in order_items
-        ]
-
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="order_items")
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
 
     def __str__(self):
         return f"{self.quantity} x {self.product.product_name} (Order #{self.order.id})"

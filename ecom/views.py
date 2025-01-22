@@ -4,10 +4,12 @@ from django.contrib.auth.hashers import make_password, check_password
 from .utils import never_cache_custom, user, user_login_required
 from django.http import JsonResponse, HttpResponseNotAllowed
 import json
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models import F
 from django.core.mail import send_mail
+from django.contrib import messages
+from django.urls import reverse
+from django.http import HttpResponseForbidden
 
 # Notify sellers about new order
 def notify_sellers(order):
@@ -175,41 +177,6 @@ def seller_dashboard(request):
         "orders": seller_orders.values(),
     })
 
-# def seller_dashboard(request):
-#     if request.session.get("user_role") != UserRole.SELLER_OWNER:
-#         return redirect("login_seller")
-
-#     user_id = request.session.get("user_id")
-#     if not user_id:
-#         return redirect("login_seller")
-
-#     try:
-#         user = User.objects.get(id=user_id)
-#         name = user.name
-#     except User.DoesNotExist:
-#         name = "Unknown User"
-#         raise PermissionDenied("User not found.")
-
-#     seller_products = Product.objects.filter(seller_id=user_id)
-#     order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related('order', 'product')
-
-#     orders = {}
-#     for item in order_items:
-#         if item.order.id not in orders:
-#             orders[item.order.id] = {
-#                 "order": item.order,
-#                 "items": [],
-#                 "total_price": 0,
-#             }
-#         orders[item.order.id]["items"].append(item)
-#         orders[item.order.id]["total_price"] += item.product.price * item.quantity
-
-#     return render(request, "seller/dashboard.html", {
-#         "name": name,
-#         "products": seller_products,
-#         "orders": orders.values(),
-#     })
-
 @never_cache_custom
 def customer_dashboard(request):
     if request.session.get("user_role") != UserRole.CUSTOMER:
@@ -306,6 +273,78 @@ def product_list(request):
         raise PermissionDenied("You do not have permission to view this page.")
 
     return render(request, "seller/product_list.html", {"products": products, "name": name})
+
+def delete_product(request, product_id):
+    if request.session.get("user_role") != UserRole.SELLER_OWNER:
+        messages.error(request, "You do not have permission to perform this action.")
+        return redirect('product_list')
+
+    user_id = request.session.get("user_id")
+
+    product = Product.objects.get(id=product_id)
+
+    if product.seller_id != user_id:
+        messages.error(request, "You do not have permission to delete this product.")
+        return redirect('product_list')
+
+    product.delete()
+    messages.success(request, "Product deleted successfully.")
+    return redirect(reverse("product_list"))
+
+def update_product(request, product_id):
+    if request.session.get("user_role") != UserRole.SELLER_OWNER:
+        return HttpResponseForbidden("You do not have permission to perform this action.")
+
+    user_id = request.session.get("user_id")
+    product = Product.objects.get(id=product_id)
+
+    if product.seller_id != user_id:
+        raise PermissionDenied("You do not have permission to update this product.")
+
+    try:
+        user = User.objects.get(id=user_id)
+        name = user.name
+    except User.DoesNotExist:
+        raise PermissionDenied("User not found.")
+
+    if request.method == "POST":
+        product_name = request.POST.get("product_name", "").strip()
+        description = request.POST.get("description", "").strip()
+        price = request.POST.get("price", "").strip()
+        image = request.FILES.get("image")
+
+        if not all([product_name, description, price]):
+            return render(request, "seller/update_product.html", {"error": "All fields are required.", "product": product})
+
+        try:
+            price = float(price)
+            if price < 0:
+                raise ValueError("Price must be positive.")
+
+            product.product_name = product_name
+            product.description = description
+            product.price = price
+
+            if image:
+                product.image = image
+
+            product.save()
+            return redirect("product_list")
+
+        except ValueError:
+            return render(
+                request,
+                "seller/update_product.html",
+                {"error": "Price must be a valid positive number.", "product": product}
+            )
+        except Exception as e:
+            return render(
+                request,
+                "seller/update_product.html",
+                {"error": f"An unexpected error occurred: {e}", "product": product}
+            )
+
+    return render(request, "seller/update_product.html", {"product": product, "name": name})
 
 # Shop view
 @never_cache_custom
@@ -435,34 +474,6 @@ def checkout(request):
         "cart": cart, "billing_address": billing_address,
         "total_price": cart.total_price(),
     })
-# def checkout(request):
-#     user_id = request.session["user_id"]
-#     cart = Cart.objects.filter(user_id=user_id).first()
-
-#     if not cart:
-#         return redirect("shop_view")
-
-#     billing_address, _ = BillingAddress.objects.get_or_create(user_id=user_id)
-
-#     if request.method == "POST":
-#         fields = ["fullname", "street_address", "city", "state", "pin_code", "country", "contact_number"]
-#         for field in fields:
-#             setattr(billing_address, field, request.POST.get(field))
-#         billing_address.save()
-
-#         order = Order.objects.create(user_id=user_id, total_price=cart.total_price())
-#         OrderItem.objects.bulk_create([
-#             OrderItem(order=order, product=item.product, quantity=item.quantity)
-#             for item in cart.cart_items.all()
-#         ])
-
-#         cart.cart_items.all().delete()
-#         return redirect("payment_view", order_id=order.id)
-
-#     return render(request, "product_details/checkout.html", {
-#         "cart": cart, "billing_address": billing_address,
-#         "total_price": cart.total_price(),
-#     })
 
 # Payment view
 @never_cache_custom
@@ -527,3 +538,26 @@ def view_orders(request):
         "name": seller.name,
         "orders": orders.values(),
     })
+
+def cancel_order_item(request, item_id):
+    if request.method == "POST":
+        user_id = request.session.get("user_id")
+        if request.session.get("user_role") != UserRole.SELLER_OWNER:
+            return redirect("login_seller")
+
+        order_item = OrderItem.objects.get(id=item_id)
+        
+        if order_item.product.seller.id != user_id:
+            raise PermissionDenied("You are not authorized to cancel this order item.")
+
+        order = order_item.order
+        order.total_price -= order_item.total_price()
+
+        order_item.delete()
+
+        order.save()
+
+        if not order.order_items.exists():
+            order.delete()
+
+        return redirect("view_orders")
