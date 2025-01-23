@@ -561,3 +561,20 @@ def cancel_order_item(request, item_id):
             order.delete()
 
         return redirect("view_orders")
+
+# def accept_order(request, item_id):
+#     if request.method == "POST":
+#         user_id = request.session.get("user_id")
+#         if request.session.get("user_role") != UserRole.SELLER_OWNER:
+#             return redirect("login_seller")
+
+#         order_item = OrderItem.objects.get(id=item_id)
+        
+#         if order_item.product.seller.id != user_id:
+#             raise PermissionDenied("You are not authorized to accept this order item.")
+
+#         order = order_item.order
+#         order.status = "Shipped"
+#         order.save()
+
+#         return redirect("view_orders")

@@ -301,6 +301,11 @@
                                     <td>{{ item.quantity }}</td>
                                     <td>{{ item.dispatch_date }}</td>
                                     <td>
+                                        <!-- <form action="{% url 'accept_order' item.id %}" method="POST" class="d-inline">
+                                            {% csrf_token %}
+                                            <button class="btn btn-primary btn-sm">Accept</button>
+                                        </form> -->
+
                                         <form action="#" method="POST" class="d-inline">
                                             {% csrf_token %}
                                             <button class="btn btn-primary btn-sm">Accept</button>
