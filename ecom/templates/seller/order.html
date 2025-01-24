@@ -7,11 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Supplier Panel</title>
+
     <!-- External Stylesheets -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
-
     <style>
         /* General Reset */
         body,
@@ -26,7 +26,7 @@
         /* Sidebar Styles */
         .sidebar {
             height: 100vh;
-            width: 300px;
+            width: 290px;
             background-color: #343a40;
             padding: 5px;
             position: fixed;
@@ -36,7 +36,6 @@
 
         .sidebar ul {
             list-style: none;
-            color: #ccc;
             padding: 0;
             margin: 0;
         }
@@ -66,77 +65,10 @@
             font-size: 1.2rem;
         }
 
-        /* Main Content */
-        main {
-            margin-left: 300px;
-            padding: 20px;
-            transition: margin-left 0.3s ease-in-out;
-            background-color: #f4f4f9;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: auto;
-        }
-
-        /* Filter Section */
-        .filter-section {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            background: #ffffff;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            gap: 15px;
-            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .filter-section .status-bar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .filter-section .search-bar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex: 1;
-            max-width: 500px;
-        }
-
-        .filter-section select,
-        .filter-section input {
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 8px;
-            width: auto;
-            min-width: 120px;
-        }
-
-        .filter-section button {
-            padding: 8px 15px;
-            background-color: #007bff;
-            border: none;
-            color: #fff;
-            border-radius: 4px;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .filter-section label {
-            font-size: 14px;
-            font-weight: 500;
-            margin-right: 10px;
-        }
-
         /* Dropdown Menu */
-        .dropdown {
+        .dropdown{
             width: 100%;
         }
-
         .dropdown-menu {
             border-radius: 5px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -153,12 +85,28 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Orders Section */
+        main {
+            margin-left: 300px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            height: 95.7vh;
+        }
+
+        .filter-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
         .orders-section {
-            background: #ffffff;
+            background: #fff;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .orders-section table {
@@ -173,65 +121,21 @@
             border: 1px solid #ddd;
         }
 
-        .orders-section th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-        }
-
-        .orders-section tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        /* Status Badges */
-        .status {
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 14px;
-            text-transform: capitalize;
-        }
-
         /* Responsive Styles */
         @media (max-width: 768px) {
             .sidebar {
-                width: 100%;
                 position: relative;
                 height: auto;
+                width: 100%;
             }
 
             main {
                 margin-left: 0;
-                padding: 15px;
             }
 
             .filter-section {
                 flex-direction: column;
-                align-items: flex-start;
-                gap: 20px;
-            }
-
-            .filter-section .status-bar {
-                justify-content: flex-start;
-            }
-
-            .filter-section .search-bar {
-                max-width: 100%;
-            }
-
-            .orders-section table,
-            .orders-section thead {
-                display: block;
-            }
-
-            .orders-section tbody {
-                display: block;
-                width: 100%;
-                overflow-x: auto;
-            }
-
-            .orders-section tr {
-                display: table;
-                width: 100%;
-                table-layout: fixed;
+                gap: 10px;
             }
         }
     </style>
@@ -247,7 +151,7 @@
                         <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <h3 class="text-white dropdown-toggle">{{ name|upper }}</h3>
                         </a>
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu" style="width: 100%;">
                             <li><a class="dropdown-item" href="#">Settings</a></li>
                             <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
                         </ul>
@@ -274,27 +178,23 @@
             <!-- Main Content Section -->
             <main class="col">
                 <div class="mt-4">
-
                     <!-- Orders Filter Section -->
-                    <div class="filter-section">
-                        <!-- Status Tabs -->
+                    <!-- <div class="filter-section">
                         <div class="status-bar">
-                            <span class="status badge bg-secondary" onclick="toggleStatus(this)">On Hold</span>
-                            <span class="status badge bg-primary" onclick="toggleStatus(this)">Pending</span>
-                            <span class="status badge bg-success" onclick="toggleStatus(this)">Ready to Ship</span>
-                            <span class="status badge bg-info text-dark" onclick="toggleStatus(this)">Shipped</span>
-                            <span class="status badge bg-danger" onclick="toggleStatus(this)">Cancelled</span>
+                            <span class="status badge bg-secondary">On Hold</span>
+                            <span class="status badge bg-primary">Pending</span>
+                            <span class="status badge bg-success">Ready to Ship</span>
+                            <span class="status badge bg-info text-dark">Shipped</span>
+                            <span class="status badge bg-danger">Cancelled</span>
                         </div>
-
-                        <!-- Filter Options -->
                         <div class="search-bar">
                             <input type="text" class="form-control" placeholder="SKU ID">
                             <button type="submit" class="btn btn-primary">Search</button>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Orders Section -->
-                    <div class="orders-section bg-white p-4 rounded shadow-sm">
+                    <div class="orders-section">
                         <h3 class="mb-4">Orders</h3>
                         {% if orders %}
                         <table class="table table-striped table-bordered">
@@ -322,18 +222,19 @@
                                     <td>{{ item.quantity }}</td>
                                     <td>{{ item.dispatch_date }}</td>
                                     <td>
-                                        {% if item.status == "Accepted" %}
-                                            <span class="badge bg-success">Label</span>
+                                        {% if item.status == "completed" %}
+                                        <button class="btn btn-primary btn-sm badge bg-success">Download Label</button>
                                         {% else %}
-                                            <form action="{% url 'accept_order' item.id %}" method="POST" class="d-inline">
-                                                {% csrf_token %}
-                                                <button class="btn btn-primary btn-sm">Accept</button>
-                                            </form>
-                                        {% endif %}
-                                        <form action="{% url 'cancel_order_item' item.id %}" method="POST" class="d-inline">
+                                        <form action="{% url 'accept_order' item.id %}" method="POST" class="d-inline">
+                                            {% csrf_token %}
+                                            <button class="btn btn-primary btn-sm">Accept</button>
+                                        </form>
+                                        <form action="{% url 'cancel_order_item' item.id %}" method="POST"
+                                            class="d-inline">
                                             {% csrf_token %}
                                             <button class="btn btn-danger btn-sm">Cancel</button>
                                         </form>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -352,42 +253,6 @@
     <!-- External JS Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"></script>
-
-    <script>
-        function toggleStatus(element) {
-            // Remove 'active' class from all status tabs
-            const statuses = document.querySelectorAll('.status');
-            statuses.forEach(status => status.classList.remove('active'));  // Remove 'active' from all tabs
-
-            // Add 'active' class to the clicked tab
-            element.classList.add('active');
-        }
-
-        document.querySelectorAll('.accept-btn').forEach(button => {
-            button.addEventListener('click', function () {
-                const orderId = this.getAttribute('data-id');
-                fetch(`/accept-order/${orderId}/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}',
-                    },
-                    body: JSON.stringify({ order_id: orderId })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            this.textContent = "Accepted";
-                            this.disabled = true;
-                            this.classList.remove('btn-primary');
-                            this.classList.add('btn-success');
-                        } else {
-                            alert("Error accepting order. Please try again.");
-                        }
-                    });
-            });
-        });
-    </script>
 </body>
 
 </html>
