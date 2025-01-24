@@ -55,7 +55,7 @@ urlpatterns = [
     # Order Success
     path("orders/cancel/<int:item_id>/", views.cancel_order_item, name="cancel_order_item"),
     path("order-success/<int:order_id>/", views.order_success, name="order_success"),
-    # path("orders/accept/<int:item_id>/", views.accept_order, name="accept_order"),
+    path("orders/accept/<int:item_id>/", views.accept_order, name="accept_order"),
 ]
 
 # Serving media files in debug mode

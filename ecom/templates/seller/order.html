@@ -132,6 +132,27 @@
             margin-right: 10px;
         }
 
+        /* Dropdown Menu */
+        .dropdown {
+            width: 100%;
+        }
+
+        .dropdown-menu {
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #63696e;
+            color: #3c3e41;
+            width: 100%;
+        }
+
+        .dropdown-menu a {
+            color: #faf4f42c;
+            padding: 10px 15px;
+            display: block;
+            text-decoration: none;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
         /* Orders Section */
         .orders-section {
             background: #ffffff;
@@ -258,11 +279,11 @@
                     <div class="filter-section">
                         <!-- Status Tabs -->
                         <div class="status-bar">
-                            <span class="status badge bg-secondary">On Hold</span>
-                            <span class="status badge bg-primary">Pending</span>
-                            <span class="status badge bg-success">Ready to Ship</span>
-                            <span class="status badge bg-info text-dark">Shipped</span>
-                            <span class="status badge bg-danger">Cancelled</span>
+                            <span class="status badge bg-secondary" onclick="toggleStatus(this)">On Hold</span>
+                            <span class="status badge bg-primary" onclick="toggleStatus(this)">Pending</span>
+                            <span class="status badge bg-success" onclick="toggleStatus(this)">Ready to Ship</span>
+                            <span class="status badge bg-info text-dark" onclick="toggleStatus(this)">Shipped</span>
+                            <span class="status badge bg-danger" onclick="toggleStatus(this)">Cancelled</span>
                         </div>
 
                         <!-- Filter Options -->
@@ -301,17 +322,15 @@
                                     <td>{{ item.quantity }}</td>
                                     <td>{{ item.dispatch_date }}</td>
                                     <td>
-                                        <!-- <form action="{% url 'accept_order' item.id %}" method="POST" class="d-inline">
-                                            {% csrf_token %}
-                                            <button class="btn btn-primary btn-sm">Accept</button>
-                                        </form> -->
-
-                                        <form action="#" method="POST" class="d-inline">
-                                            {% csrf_token %}
-                                            <button class="btn btn-primary btn-sm">Accept</button>
-                                        </form>
-                                        <form action="{% url 'cancel_order_item' item.id %}" method="POST"
-                                            class="d-inline">
+                                        {% if item.status == "Accepted" %}
+                                            <span class="badge bg-success">Label</span>
+                                        {% else %}
+                                            <form action="{% url 'accept_order' item.id %}" method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <button class="btn btn-primary btn-sm">Accept</button>
+                                            </form>
+                                        {% endif %}
+                                        <form action="{% url 'cancel_order_item' item.id %}" method="POST" class="d-inline">
                                             {% csrf_token %}
                                             <button class="btn btn-danger btn-sm">Cancel</button>
                                         </form>
@@ -333,63 +352,42 @@
     <!-- External JS Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"></script>
+
+    <script>
+        function toggleStatus(element) {
+            // Remove 'active' class from all status tabs
+            const statuses = document.querySelectorAll('.status');
+            statuses.forEach(status => status.classList.remove('active'));  // Remove 'active' from all tabs
+
+            // Add 'active' class to the clicked tab
+            element.classList.add('active');
+        }
+
+        document.querySelectorAll('.accept-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const orderId = this.getAttribute('data-id');
+                fetch(`/accept-order/${orderId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                    body: JSON.stringify({ order_id: orderId })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.textContent = "Accepted";
+                            this.disabled = true;
+                            this.classList.remove('btn-primary');
+                            this.classList.add('btn-success');
+                        } else {
+                            alert("Error accepting order. Please try again.");
+                        }
+                    });
+            });
+        });
+    </script>
 </body>
 
 </html>
-
-
-<!-- {% for product in products %}
-<div class="product-item">
-    {% if product.image %}
-    <img src="{{ product.image.url }}" alt="{{ product.product_name }}" class="product-image">
-    {% endif %}
-    <div class="product-name">{{ product.product_name }}</div>
-    <div class="product-description">{{ product.description }}</div>
-    <div class="product-price">₹{{ product.price }}</div>
-</div>
-{% endfor %}
-
-
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Order ID</th>
-            <th>User Name</th>
-            <th>Status</th>
-            <th>Total Price</th>
-            <th>Image</th>
-            <th>Product Name</th>
-            <th>Quantity</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for order_data in orders %}
-        {% for item in order_data.items %}
-        <tr>
-            {% if forloop.first %}
-            <td rowspan="{{ order_data.items|length }}">{{ order_data.order.id }}</td>
-            <td rowspan="{{ order_data.items|length }}">{{ order_data.order.user.name }}</td>
-            <td rowspan="{{ order_data.items|length }}">{{ order_data.order.get_status_display }}</td>
-            <td rowspan="{{ order_data.items|length }}" class="fw-bold">₹{{ order_data.total_price }}</td>
-            {% endif %}
-            <td>
-                <img src="{{ item.product.image.url }}" alt="{{ item.product.product_name }}" class="img-thumbnail" />
-            </td>
-            <td>{{ item.product.product_name }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>
-                {% if item.status != 'cancelled' %}
-                <form action="{% url 'cancel_order_item' item.id %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Cancel</button>
-                </form>
-                {% else %}
-                <span class="text-muted">Cancelled</span>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-        {% endfor %}
-    </tbody>
-</table> -->
