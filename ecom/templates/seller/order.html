@@ -66,9 +66,10 @@
         }
 
         /* Dropdown Menu */
-        .dropdown{
+        .dropdown {
             width: 100%;
         }
+
         .dropdown-menu {
             border-radius: 5px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -119,6 +120,11 @@
             text-align: left;
             padding: 10px;
             border: 1px solid #ddd;
+        }
+
+        .btn-success:hover {
+            background-color: #28a745;
+            border-color: #28a745;
         }
 
         /* Responsive Styles */
@@ -223,7 +229,12 @@
                                     <td>{{ item.dispatch_date }}</td>
                                     <td>
                                         {% if item.status == "completed" %}
-                                        <button class="btn btn-primary btn-sm badge bg-success">Download Label</button>
+                                        <form action="#" method="POST" class="d-inline">
+                                            {% csrf_token %}
+                                            <button class="btn btn-success btn-sm d-flex align-items-center">
+                                                <i class="fa-solid fa-download" style="font-size: 1.2rem;"></i> Label
+                                            </button>
+                                        </form>
                                         {% else %}
                                         <form action="{% url 'accept_order' item.id %}" method="POST" class="d-inline">
                                             {% csrf_token %}

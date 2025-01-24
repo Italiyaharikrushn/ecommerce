@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Label</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        .label-container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .address-section {
+            width: 48%;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 1em;
+            margin: 5px 0;
+        }
+
+        /* Product Table */
+        .product-details table,
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .product-details th,
+        .invoice-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .product-details td,
+        .invoice-table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        .invoice-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .invoice-details .bill-to,
+        .invoice-details .sold-by {
+            width: 48%;
+        }
+
+        /* Total Section */
+        .total {
+            text-align: right;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+
+        /* Footer Styles */
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #555;
+            text-align: center;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .address-section {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+
+            .invoice-details {
+                flex-direction: column;
+            }
+
+            .invoice-details .bill-to,
+            .invoice-details .sold-by {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+
+            .total {
+                text-align: left;
+            }
+
+            .footer {
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="label-container">
+        <header class="header">
+            <div class="address-section customer-address">
+                <h2>Customer Address</h2>
+                <p><strong>Mohammad Asjad</strong></p>
+                <p>13 dozen mohalla street</p>
+                <p>telephone exchange</p>
+                <p>melvisharam, Tamil Nadu, 632509</p>
+            </div>
+
+            <div class="address-section seller-address">
+                <h2>Seller Address</h2>
+                <p><strong>Mohammad Asjad</strong></p>
+                <p>13 dozen mohalla street</p>
+                <p>telephone exchange</p>
+                <p>melvisharam, Tamil Nadu, 632509</p>
+            </div>
+        </header>
+
+        <section class="product-details">
+            <h2>Product Details</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>SKU</th>
+                        <th>Qty</th>
+                        <th>Order No.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>BEIGE WALLET .D</td>
+                        <td>1</td>
+                        <td>113878902354768896_1</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="tax-invoice">
+            <h2>Tax Invoice</h2>
+            <div class="invoice-details">
+                <div class="bill-to">
+                    <p><strong>BILL TO / SHIP TO</strong></p>
+                    <p>Mohammad Asjad - 13 dozen mohalla street , telephone exchange , melvisharam, Tamil Nadu, 632509,
+                        Place of Supply: Tamil Nadu</p>
+                </div>
+                <div class="sold-by">
+                    <p><strong>Sold by:</strong> ITALIYA ENTERPRISE.</p>
+                    <p>A-1/503, 5th Floor, Eklavya Residency, Mota Varachha Main Road, Surat, Gujarat, 394105</p>
+                </div>
+            </div>
+
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Qty</th>
+                        <th>Gross Amount</th>
+                        <th>Discount</th>
+                        <th>Taxable Value</th>
+                        <th>IGST @12.0%</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Stylish latest Small Wallet for Women/Men/Girls/Boys for zipper wallets leather credit card
+                            & Money holder - Free Size</td>
+                        <td>1</td>
+                        <td>Rs.119.00</td>
+                        <td>Rs.11.00</td>
+                        <td>Rs.96.43</td>
+                        <td>Rs.11.57</td>
+                        <td>Rs.108.00</td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+
+            <div class="total">
+                <p><strong>Total: Rs.123.00</strong></p>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>
