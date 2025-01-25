@@ -21,17 +21,11 @@ def notify_sellers(order):
         seller_orders[seller].append(item)
 
     for seller, items in seller_orders.items():
-        product_details = "\n".join(
-            [f"{item.quantity} x {item.product.product_name} (${item.total_price()})" for item in items]
-        )
+        product_details = "\n".join([f"{item.quantity} x {item.product.product_name} (${item.total_price()})" for item in items])
+
         email_subject = f"New Order Notification - Order #{order.id}"
         email_body = f"Dear {seller.name},\n\nYou have a new order. Here are the details:\n\n{product_details}\n\nThank you."
-        send_mail(
-            subject=email_subject,
-            message=email_body,
-            from_email="no-reply@example.com",
-            recipient_list=[seller.email],
-        )
+        send_mail(subject=email_subject,message=email_body,from_email="no-reply@example.com",recipient_list=[seller.email],)
 
 # Helper function to handle user registration
 def register_user(request, role, template, redirect_url):
@@ -43,22 +37,13 @@ def register_user(request, role, template, redirect_url):
         gender = request.POST.get("gender")
 
         if User.objects.filter(email=email, role=role).exists():
-            context = {
-                "name": name,
-                "phone": phone,
-                "gender": gender,
-                "error": "Email already registered."
-            }
+            context = {"name": name,"phone": phone,"gender": gender,"error": "Email already registered."}
             return render(request, template, context)
 
         hashed_password = make_password(password)
-        User.objects.create(
-            name=name, email=email, phone=phone, 
-            password=hashed_password, gender=gender, role=role
-        )
+        User.objects.create(name=name, email=email, phone=phone, password=hashed_password, gender=gender, role=role)
 
         return redirect(redirect_url)
-
     return render(request, template)
 
 # Views for user roles (Customer, Seller, Admin)
@@ -92,11 +77,7 @@ def handle_login(request, role, template, redirect_url):
             return render(request, template, {"error": "Invalid credentials."})
 
         if check_password(password, user.password):
-            request.session.update({
-                "user_id": user.id,
-                "user_name": user.name,
-                "user_role": user.role,
-            })
+            request.session.update({"user_id": user.id,"user_name": user.name,"user_role": user.role,})
             return redirect(redirect_url)
 
     return render(request, template)
@@ -163,19 +144,12 @@ def seller_dashboard(request):
     for item in order_items:
         order_id = item.order.id
         if order_id not in seller_orders:
-            seller_orders[order_id] = {
-                "order": item.order,
-                "items": [],
-                "total_price": 0,
-            }
+            seller_orders[order_id] = {"order": item.order,"items": [],"total_price": 0,}
+
         seller_orders[order_id]["items"].append(item)
         seller_orders[order_id]["total_price"] += item.product.price * item.quantity
 
-    return render(request, "seller/dashboard.html", {
-        "name": seller.name,
-        "products": seller_products,
-        "orders": seller_orders.values(),
-    })
+    return render(request, "seller/dashboard.html", {"name": seller.name,"products": seller_products,"orders": seller_orders.values(),})
 
 @never_cache_custom
 def customer_dashboard(request):
@@ -219,33 +193,17 @@ def add_product(request):
 
             seller = User.objects.get(id=user_id, role=UserRole.SELLER_OWNER)
 
-            Product.objects.create(
-                product_name=product_name,
-                description=description,
-                price=price,
-                image=image,
-                seller=seller,
-            )
+            Product.objects.create(product_name=product_name, description=description, price=price, image=image, seller=seller,)
             return redirect("product_list")
 
         except ValueError:
-            return render(
-                request,
-                "seller/add_product.html",
-                {"error": "Price must be a valid positive number.", "name": name}
-            )
+            return render(request,"seller/add_product.html",{"error": "Price must be a valid positive number.", "name": name})
+        
         except ObjectDoesNotExist:
-            return render(
-                request,
-                "seller/add_product.html",
-                {"error": "Seller account not found or unauthorized.", "name": name}
-            )
+            return render(request,"seller/add_product.html",{"error": "Seller account not found or unauthorized.", "name": name})
+        
         except Exception as e:
-            return render(
-                request,
-                "seller/add_product.html",
-                {"error": f"An unexpected error occurred: {e}", "name": name}
-            )
+            return render(request,"seller/add_product.html",{"error": f"An unexpected error occurred: {e}", "name": name})
 
     return render(request, "seller/add_product.html", {"name": name})
 
@@ -332,17 +290,11 @@ def update_product(request, product_id):
             return redirect("product_list")
 
         except ValueError:
-            return render(
-                request,
-                "seller/update_product.html",
-                {"error": "Price must be a valid positive number.", "product": product}
-            )
+            return render(request,"seller/update_product.html",{"error": "Price must be a valid positive number.", "product": product})
+
         except Exception as e:
-            return render(
-                request,
-                "seller/update_product.html",
-                {"error": f"An unexpected error occurred: {e}", "product": product}
-            )
+            return render(request,"seller/update_product.html",{"error": f"An unexpected error occurred: {e}", "product": product})
+
 
     return render(request, "seller/update_product.html", {"product": product, "name": name})
 
@@ -387,9 +339,7 @@ def get_cart(request):
     cart_items = cart.cart_items.all()
     total_price = sum(item.product.price * item.quantity for item in cart_items)
 
-    return render(request, "product_details/cart.html", {
-        "cart": cart, "cart_items": cart_items, "total_price": total_price,
-    })
+    return render(request, "product_details/cart.html", {"cart": cart, "cart_items": cart_items, "total_price": total_price,})
 
 # Add to cart view
 @never_cache_custom
@@ -470,10 +420,7 @@ def checkout(request):
         cart.cart_items.all().delete()
         return redirect("payment_view", order_id=order.id)
 
-    return render(request, "product_details/checkout.html", {
-        "cart": cart, "billing_address": billing_address,
-        "total_price": cart.total_price(),
-    })
+    return render(request, "product_details/checkout.html", {"cart": cart, "billing_address": billing_address,"total_price": cart.total_price(),})
 
 # Payment view
 @never_cache_custom
@@ -503,11 +450,7 @@ def order_success(request, order_id):
     except Order.DoesNotExist:
         return redirect("home_view")
 
-    return render(
-        request,
-        "product_details/thankyou.html",
-        {"order": order, "seller": order.order_items.first().product.seller},
-    )
+    return render(request,"product_details/thankyou.html",{"order": order, "seller": order.order_items.first().product.seller},)
 
 def view_orders(request):
     user_id = request.session.get("user_id")
@@ -526,18 +469,12 @@ def view_orders(request):
     for item in order_items:
         order_id = item.order.id
         if order_id not in orders:
-            orders[order_id] = {
-                "order": item.order,
-                "items": [],
-                "total_price": 0,
-            }
+            orders[order_id] = {"order": item.order,"items": [],"total_price": 0,}
+            
         orders[order_id]["items"].append(item)
         orders[order_id]["total_price"] += item.product.price * item.quantity
 
-    return render(request, "seller/order.html", {
-        "name": seller.name,
-        "orders": orders.values(),
-    })
+    return render(request, "seller/order.html", {"name": seller.name,"orders": orders.values(),})
 
 def cancel_order_item(request, item_id):
     if request.method == "POST":

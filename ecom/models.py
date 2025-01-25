@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.core.validators import MinLengthValidator
 
 def get_image_upload_to(instance, filename):
     ext = filename.split(".")[-1]
@@ -165,4 +166,27 @@ class Payment(models.Model):
     def __str__(self):
         return f"Payment {self.id} - {self.status}"
 
-                                        # <!-- <span class="badge bg-success">Label</span> -->
+class ShippingAddress(models.Model):
+    seller = models.ForeignKey(User,on_delete=models.CASCADE,limit_choices_to={"role": UserRole.SELLER_OWNER},null=True,blank=True,)
+    BusinessName = models.CharField(max_length=255)
+    BusinessAddress = models.TextField()
+    City = models.CharField(max_length=100)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    pincode = models.CharField(max_length=6)
+    country = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.BusinessName}, {self.City}"
+    
+class BankDetails(models.Model):
+    BankAccountNo = models.CharField(max_length=20, validators=[MinLengthValidator(9)],verbose_name="Bank Account Number")
+    IFSCCode = models.CharField(max_length=11, validators=[MinLengthValidator(11)],verbose_name="IFSC Code")
+    AccountHolderName = models.CharField(max_length=100, verbose_name="Account Holder Name")
+
+    class Meta:
+        verbose_name = "Bank Detail"
+        verbose_name_plural = "Bank Details"
+        ordering = ['AccountHolderName']
+
+    def __str__(self):
+        return f"{self.AccountHolderName} - {self.BankAccountNo}"
