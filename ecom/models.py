@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.core.validators import MinLengthValidator
+from django.utils.timezone import now
 
 def get_image_upload_to(instance, filename):
     ext = filename.split(".")[-1]
@@ -129,6 +130,7 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    dispatch_date = models.DateField(blank=True, null=True, help_text="The date the item was dispatched.")
 
     def __str__(self):
         return f"{self.quantity} x {self.product.product_name} (Order #{self.order.id})"

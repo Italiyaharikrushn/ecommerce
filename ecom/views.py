@@ -10,6 +10,7 @@ from django.core.mail import send_mail
 from django.contrib import messages
 from django.urls import reverse
 from django.http import HttpResponseForbidden
+from datetime import date, timedelta
 
 # Notify sellers about new order
 def notify_sellers(order):
@@ -409,8 +410,16 @@ def checkout(request):
         billing_address.save()
 
         order = Order.objects.create(user_id=user_id, total_price=cart.total_price())
+
+        dispatch_date = date.today() + timedelta(days=2)
+
         order_items = [
-            OrderItem(order=order, product=item.product, quantity=item.quantity)
+            OrderItem(
+                order=order,
+                product=item.product,
+                quantity=item.quantity,
+                dispatch_date=dispatch_date
+            )
             for item in cart.cart_items.all()
         ]
         OrderItem.objects.bulk_create(order_items)
@@ -420,7 +429,7 @@ def checkout(request):
         cart.cart_items.all().delete()
         return redirect("payment_view", order_id=order.id)
 
-    return render(request, "product_details/checkout.html", {"cart": cart, "billing_address": billing_address,"total_price": cart.total_price(),})
+    return render(request,"product_details/checkout.html",{"cart": cart, "billing_address": billing_address, "total_price": cart.total_price()},)
 
 # Payment view
 @never_cache_custom
@@ -454,8 +463,9 @@ def order_success(request, order_id):
 
 def view_orders(request):
     user_id = request.session.get("user_id")
-    
-    if request.session.get("user_role") != UserRole.SELLER_OWNER:
+    user_role = request.session.get("user_role")
+
+    if user_role != UserRole.SELLER_OWNER:
         return redirect("login_seller")
 
     try:
@@ -464,17 +474,61 @@ def view_orders(request):
         raise PermissionDenied("Seller not found.")
 
     order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related('order', 'product')
+
+    orders = Order.objects.filter(status='completed')
     orders = {}
+    today = date.today()
+    two_days_from_today = today + timedelta(days=2)
 
     for item in order_items:
         order_id = item.order.id
+
         if order_id not in orders:
-            orders[order_id] = {"order": item.order,"items": [],"total_price": 0,}
-            
+            orders[order_id] = {
+                "order": item.order,
+                "items": [],
+                "total_price": 0,
+            }
+
         orders[order_id]["items"].append(item)
         orders[order_id]["total_price"] += item.product.price * item.quantity
 
-    return render(request, "seller/order.html", {"name": seller.name,"orders": orders.values(),})
+        if item.dispatch_date:
+            if today > item.dispatch_date:
+                messages.error(request, f"Order item '{item.product.product_name}' has breached the dispatch date!")
+            elif two_days_from_today >= item.dispatch_date:
+                messages.warning(request, f"Order item '{item.product.product_name}' is nearing the dispatch date!")
+
+    return render(request, "seller/order.html", {
+        "name": seller.name,
+        "orders": orders.values(),
+        "today": today,
+        "two_days_from_today": two_days_from_today,
+    })
+
+# def view_orders(request):
+#     user_id = request.session.get("user_id")
+    
+#     if request.session.get("user_role") != UserRole.SELLER_OWNER:
+#         return redirect("login_seller")
+
+#     try:
+#         seller = User.objects.get(id=user_id, role=UserRole.SELLER_OWNER)
+#     except User.DoesNotExist:
+#         raise PermissionDenied("Seller not found.")
+
+#     order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related('order', 'product')
+#     orders = {}
+
+#     for item in order_items:
+#         order_id = item.order.id
+#         if order_id not in orders:
+#             orders[order_id] = {"order": item.order,"items": [],"total_price": 0,}
+            
+#         orders[order_id]["items"].append(item)
+#         orders[order_id]["total_price"] += item.product.price * item.quantity
+
+#     return render(request, "seller/order.html", {"name": seller.name,"orders": orders.values(),})
 
 def cancel_order_item(request, item_id):
     if request.method == "POST":
@@ -523,3 +577,5 @@ def accept_order(request, item_id):
             raise PermissionDenied("Order item not found.")
         
         return redirect("view_orders")
+
+# <!-- <td>{{ item.dispatch_date }}</td> -->
