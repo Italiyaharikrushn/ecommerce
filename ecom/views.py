@@ -461,6 +461,20 @@ def order_success(request, order_id):
 
     return render(request,"product_details/thankyou.html",{"order": order, "seller": order.order_items.first().product.seller},)
 
+def my_orders_view(request):
+    user_role = request.session.get("user_role")
+    user_id = request.session.get("user_id")
+
+    user = User.objects.get(id=user_id)
+    name = user.name
+
+    if user_role == UserRole.CUSTOMER:
+        orders = Order.objects.filter(user=user)
+        return render(request, "product_details/my_orders.html", {"orders": orders, "name": name})
+    
+    else:
+        raise PermissionDenied("You do not have permission to view this page.")
+
 def view_orders(request):
     user_id = request.session.get("user_id")
     user_role = request.session.get("user_role")

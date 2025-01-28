@@ -48,6 +48,7 @@ urlpatterns = [
 
     # Checkout
     path("checkout/", views.checkout, name="checkout"),
+    path('cart/my_orders/', views.my_orders_view, name='my_orders'),
 
     # Payment
     path("payment/<int:order_id>/", views.payment_view, name="payment_view"),

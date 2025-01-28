@@ -404,7 +404,7 @@
     
         document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
-            const status = params.get('status') ? params.get('status').toLowerCase() : 'pending'; // Default to 'pending'
+            const status = params.get('status') ? params.get('status').toLowerCase() : 'pending';
             switchTab(status);
         });
     </script>

@@ -58,6 +58,9 @@
 							<a class="nav-link" href="{% url 'home_view' %}">Home</a>
 						</li>
 						<li class="active"><a class="nav-link" href="{% url 'shop_view' %}">Shop</a></li>
+						<li class="nav-item">
+							<a class="nav-link" href="{% url 'my_orders' %}">My Order</a>
+						</li>
 						<li><a class="nav-link" href="{% url 'about_view' %}">About us</a></li>
 						<li><a class="nav-link" href="{% url 'contact' %}">Contact us</a></li>
 					</ul>
@@ -125,17 +128,6 @@
 		</div>
 	</section>
 	<!-- End Product Section -->
-
-	<!-- Messages Block -->
-	{% if messages %}
-	<div class="messages" style="position: fixed; bottom: 80px; left: 80%; z-index: 1000;">
-		{% for message in messages %}
-		<div class="alert alert-{{ message.tags }} text-center" role="alert">
-			{{ message }}
-		</div>
-		{% endfor %}
-	</div>
-	{% endif %}
 
 	<!-- Start Footer Section -->
 	<footer class="footer-section">
