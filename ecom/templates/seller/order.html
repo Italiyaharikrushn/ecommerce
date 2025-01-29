@@ -347,6 +347,7 @@
                                 <th>Quantity</th>
                                 <th>Dispatch Date/SLA</th>
                                 <th>Action</th>
+                                
                             </tr>
                         </thead>
                         <tbody>
@@ -364,6 +365,7 @@
                                 {% endif %}
                                 <td>{{ item.quantity }}</td>
                                 <td>
+                                    {% if item.status != "cancelled" %}
                                     {{ item.dispatch_date|date:"Y-m-d" }}<br>
                                     {% if item.dispatch_date and today > item.dispatch_date %}
                                     <span class="badge bg-danger">Breached</span>
@@ -372,22 +374,25 @@
                                     {% else %}
                                     <span class="badge bg-success">On Time</span>
                                     {% endif %}
+                                    {% endif %}
                                 </td>
                                 <td>
-                                    {% if item.status == "ready_to_ship" %}
-                                    <form action="#" method="POST" class="d-inline">
-                                        {% csrf_token %}
-                                        <button class="btn btn-primary btn-sm">Download Label</button>
-                                    </form>
-                                    {% else %}
-                                    <form action="{% url 'accept_order' item.id %}" method="POST" class="d-inline">
-                                        {% csrf_token %}
-                                        <button class="btn btn-primary btn-sm">Accept</button>
-                                    </form>
-                                    <form action="{% url 'cancel_order_item' item.id %}" method="POST" class="d-inline">
-                                        {% csrf_token %}
-                                        <button class="btn btn-danger btn-sm">Cancel</button>
-                                    </form>
+                                    {% if item.status != "cancelled" %}
+                                        {% if item.status == "ready_to_ship" %}
+                                            <form action="#" method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <button class="btn btn-primary btn-sm">Download Label</button>
+                                            </form>
+                                        {% else %}
+                                            <form action="{% url 'accept_order' item.id %}" method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <button class="btn btn-primary btn-sm">Accept</button>
+                                            </form>
+                                            <form action="{% url 'cancel_order_item' item.id %}" method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <button class="btn btn-danger btn-sm">Cancel</button>
+                                            </form>
+                                        {% endif %}
                                     {% endif %}
                                 </td>
                             </tr>
