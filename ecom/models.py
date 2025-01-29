@@ -122,6 +122,7 @@ class Order(models.Model):
 class OrderItem(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
+        ('ready_to_ship', 'Ready_To_Ship'),
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
     ]
@@ -129,7 +130,7 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending')
     dispatch_date = models.DateField(blank=True, null=True, help_text="The date the item was dispatched.")
 
     def __str__(self):

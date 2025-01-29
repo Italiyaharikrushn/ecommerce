@@ -489,23 +489,32 @@ def view_orders(request):
 
     order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related('order', 'product')
 
-    orders = Order.objects.filter(status='completed')
-    orders = {}
+    orders_dict = {}
     today = date.today()
     two_days_from_today = today + timedelta(days=2)
 
+    status_counts = {
+        'onhold': 0,
+        'pending': 0,
+        'ready_to_ship': 0,
+    }
+
     for item in order_items:
         order_id = item.order.id
+        order_status = item.status.lower()
 
-        if order_id not in orders:
-            orders[order_id] = {
+        if order_status in status_counts:
+            status_counts[order_status] += 1
+
+        if order_id not in orders_dict:
+            orders_dict[order_id] = {
                 "order": item.order,
                 "items": [],
                 "total_price": 0,
             }
 
-        orders[order_id]["items"].append(item)
-        orders[order_id]["total_price"] += item.product.price * item.quantity
+        orders_dict[order_id]["items"].append(item)
+        orders_dict[order_id]["total_price"] += item.product.price * item.quantity
 
         if item.dispatch_date:
             if today > item.dispatch_date:
@@ -515,34 +524,11 @@ def view_orders(request):
 
     return render(request, "seller/order.html", {
         "name": seller.name,
-        "orders": orders.values(),
+        "orders": orders_dict.values(),
         "today": today,
         "two_days_from_today": two_days_from_today,
+        "status_counts": status_counts,
     })
-
-# def view_orders(request):
-#     user_id = request.session.get("user_id")
-    
-#     if request.session.get("user_role") != UserRole.SELLER_OWNER:
-#         return redirect("login_seller")
-
-#     try:
-#         seller = User.objects.get(id=user_id, role=UserRole.SELLER_OWNER)
-#     except User.DoesNotExist:
-#         raise PermissionDenied("Seller not found.")
-
-#     order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related('order', 'product')
-#     orders = {}
-
-#     for item in order_items:
-#         order_id = item.order.id
-#         if order_id not in orders:
-#             orders[order_id] = {"order": item.order,"items": [],"total_price": 0,}
-            
-#         orders[order_id]["items"].append(item)
-#         orders[order_id]["total_price"] += item.product.price * item.quantity
-
-#     return render(request, "seller/order.html", {"name": seller.name,"orders": orders.values(),})
 
 def cancel_order_item(request, item_id):
     if request.method == "POST":
@@ -580,7 +566,7 @@ def accept_order(request, item_id):
             if order_item.product.seller.id != user_id:
                 raise PermissionDenied("You are not authorized to accept this order item.")
 
-            order_item.status = "completed"
+            order_item.status = "ready_to_ship"
             order_item.save()
             
             order = order_item.order
@@ -591,5 +577,3 @@ def accept_order(request, item_id):
             raise PermissionDenied("Order item not found.")
         
         return redirect("view_orders")
-
-# <!-- <td>{{ item.dispatch_date }}</td> -->

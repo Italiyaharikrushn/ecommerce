@@ -280,12 +280,12 @@
             <main class="col-md-9 col-lg-10 p-4">
                 <!-- Tabs -->
                 <div class="tabs mb-4">
-                    <button class="tab active" onclick="switchTab('pending')">Pending</button>
-                    <button class="tab" onclick="switchTab('completed')">Ready to Ship</button>
+                    <button class="tab" onclick="switchTab('onhold')">On Hold ({{ status_counts.onhold }})</button>
+                    <button class="tab active" onclick="switchTab('pending')">Pending ({{ status_counts.pending }})</button>
+                    <button class="tab" onclick="switchTab('ready_to_ship')">Ready to Ship ({{ status_counts.ready_to_ship }})</button>
                     <button class="tab" onclick="switchTab('shipped')">Shipped</button>
                     <button class="tab" onclick="switchTab('cancelled')">Cancelled</button>
                 </div>
-            
                 <!-- Filters -->
                 <div class="filter-section d-flex flex-wrap align-items-center gap-3 mb-4">
                     <div class="filter">
@@ -293,11 +293,6 @@
                         <select id="slaStatus" class="form-select">
                             <option>SLA Status</option>
                             <option>Label Downloaded</option>
-                        </select>
-                    </div>
-                    <div class="filter">
-                        <select id="additionalFilters" class="form-select">
-                            <option>All Filters</option>
                         </select>
                     </div>
                     <div class="filter">
@@ -310,7 +305,7 @@
                         <input type="text" id="search" class="form-control" placeholder="Search by SKU ID">
                     </div>
                 </div>
-            
+
                 <!-- Orders Section -->
                 <div class="orders-section bg-white p-4 rounded shadow">
                     <h3>Orders</h3>
@@ -351,7 +346,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% if item.status == "completed" %}
+                                    {% if item.status == "ready_to_ship" %}
                                     <form action="#" method="POST" class="d-inline">
                                         {% csrf_token %}
                                         <button class="btn btn-primary btn-sm">Download Label</button>
@@ -387,10 +382,10 @@
         function switchTab(status) {
             const tabs = document.querySelectorAll('.tab');
             tabs.forEach(tab => tab.classList.remove('active'));
-    
+
             const activeTab = Array.from(tabs).find(tab => tab.textContent.trim().toLowerCase() === status);
             if (activeTab) activeTab.classList.add('active');
-    
+
             const orders = document.querySelectorAll('.order-row');
             orders.forEach(order => {
                 const orderStatus = order.getAttribute('data-status');
@@ -401,7 +396,7 @@
                 }
             });
         }
-    
+
         document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
             const status = params.get('status') ? params.get('status').toLowerCase() : 'pending';
