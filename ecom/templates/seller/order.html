@@ -42,17 +42,17 @@
             overflow-y: auto;
             border-right: 1px solid #ddd;
         }
-    
+
         .sidebar ul {
             list-style: none;
             padding: 0;
             margin: 0;
         }
-    
+
         .sidebar ul li {
             margin: 3px 0;
         }
-    
+
         .sidebar ul li a {
             display: flex;
             align-items: center;
@@ -63,12 +63,12 @@
             border-radius: 5px;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-    
+
         .sidebar ul li a:hover {
             background-color: #495057;
             color: #6f7780;
         }
-    
+
         .sidebar ul li a i {
             margin-right: 10px;
             font-size: 1.2rem;
@@ -267,13 +267,11 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar Section -->
-            <nav class="sidebar col-md-3 col-lg-2 bg-dark text-white p-3">
+            <nav class="sidebar">
                 <ul class="navbar-nav">
-                    <!-- Dropdown for User -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-white" href="#" id="userDropdown" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <h3>{{ name|upper }}</h3>
+                        <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <h3 class="text-white dropdown-toggle">{{ name|upper }}</h3>
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="#">Settings</a></li>
@@ -281,26 +279,21 @@
                         </ul>
                     </li>
                     <hr>
-                    <!-- Sidebar Links -->
-                    <li><a href="{% url 'seller_dashboard' %}" class="nav-link"><i class="fas fa-home"></i> Home</a>
-                    </li>
-                    <li><a href="{% url 'view_orders' %}" class="nav-link"><i class="fas fa-shopping-cart"></i>
-                            Orders</a></li>
-                    <li><a href="#" class="nav-link"><i class="fas fa-undo-alt"></i> Returns</a></li>
-                    <li><a href="#" class="nav-link"><i class="fas fa-money-bill-alt"></i> Pricing</a></li>
-                    <li><a href="#" class="nav-link"><i class="fas fa-file-invoice"></i> Claims</a></li>
-                    <li><a href="{% url 'product_list' %}" class="nav-link"><i class="fas fa-boxes"></i> Inventory</a>
-                    </li>
-                    <li><a href="{% url 'add_product' %}" class="nav-link"><i class="fas fa-upload"></i> Add Product</a>
-                    </li>
-                    <li><a href="#" class="nav-link"><i class="fas fa-images"></i> Image Bulk Upload</a></li>
-                    <li><a href="#" class="nav-link"><i class="fas fa-credit-card"></i> Payments</a></li>
-                    <li><a href="#" class="nav-link"><i class="fas fa-warehouse"></i> Warehouse</a></li>
-                    <li><a href="#" class="nav-link"><i class="fas fa-users"></i> Influencer Marketing</a></li>
-                    <li><a href="#" class="nav-link"><i class="fas fa-bullhorn"></i> Advertisement</a></li>
-                    <li><a href="#" class="nav-link"><i class="fas fa-percent"></i> Promotions</a></li>
-                    <li><a href="#" class="nav-link"><i class="fas fa-coins"></i> Instant Cash</a></li>
-                    <li><a href="#" class="nav-link"><i class="fas fa-balance-scale"></i> Quality</a></li>
+                    <li><a href="{% url 'seller_dashboard' %}"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="{% url 'view_orders' %}"><i class="fas fa-shopping-cart"></i> Orders</a></li>
+                    <li><a href="#"><i class="fas fa-undo-alt"></i> Returns</a></li>
+                    <li><a href="#"><i class="fas fa-money-bill-alt"></i> Pricing</a></li>
+                    <li><a href="#"><i class="fas fa-file-invoice"></i> Claims</a></li>
+                    <li><a href="{% url 'product_list' %}"><i class="fas fa-boxes"></i> Inventory</a></li>
+                    <li><a href="{% url 'add_product' %}"><i class="fas fa-upload"></i> Add Product</a></li>
+                    <li><a href="#"><i class="fas fa-images"></i> Image Bulk Upload</a></li>
+                    <li><a href="#"><i class="fas fa-credit-card"></i> Payments</a></li>
+                    <li><a href="#"><i class="fas fa-warehouse"></i> Warehouse</a></li>
+                    <li><a href="#"><i class="fas fa-users"></i> Influencer Marketing</a></li>
+                    <li><a href="#"><i class="fas fa-bullhorn"></i> Advertisement</a></li>
+                    <li><a href="#"><i class="fas fa-percent"></i> Promotions</a></li>
+                    <li><a href="#"><i class="fas fa-coins"></i> Instant Cash</a></li>
+                    <li><a href="#"><i class="fas fa-balance-scale"></i> Quality</a></li>
                 </ul>
             </nav>
 

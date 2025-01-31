@@ -25,7 +25,7 @@
             font-family: Arial, sans-serif;
             background-color: #f5f5f5;
         }
-    
+
         /* Sidebar Styles */
         .sidebar {
             height: 100vh;
@@ -36,17 +36,17 @@
             overflow-y: auto;
             border-right: 1px solid #ddd;
         }
-    
+
         .sidebar ul {
             list-style: none;
             padding: 0;
             margin: 0;
         }
-    
+
         .sidebar ul li {
             margin: 3px 0;
         }
-    
+
         .sidebar ul li a {
             display: flex;
             align-items: center;
@@ -57,17 +57,17 @@
             border-radius: 5px;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-    
+
         .sidebar ul li a:hover {
             background-color: #495057;
             color: #6f7780;
         }
-    
+
         .sidebar ul li a i {
             margin-right: 10px;
             font-size: 1.2rem;
         }
-    
+
         /* Main Content Styles */
         main {
             margin-left: 300px;
@@ -75,17 +75,17 @@
             background-color: #f5f5f5;
             min-height: 100vh;
         }
-    
+
         header {
             margin-bottom: 20px;
         }
-    
+
         header h2 {
             font-size: 2rem;
             color: #333;
             font-weight: bold;
         }
-    
+
         /* Card Styles */
         .card {
             border: none;
@@ -93,7 +93,7 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             background-color: #fff;
         }
-    
+
         .card a {
             text-decoration: none;
             color: inherit;
@@ -102,36 +102,36 @@
             text-align: center;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-    
+
         .card a:hover {
             transform: translateY(-5px);
             box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
             color: #414e5c;
         }
-    
+
         .card-title {
             font-size: 1.25rem;
             font-weight: bold;
             margin-bottom: 10px;
         }
-    
+
         .card-text {
             font-size: 1rem;
             color: #555;
         }
-    
+
         /* Dropdown Menu */
-        .dropdown{
+        .dropdown {
             width: 100%;
         }
-        
+
         .dropdown-menu {
             border-radius: 5px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             background-color: #63696e;
             color: #3c3e41;
         }
-    
+
         .dropdown-menu a {
             color: #faf4f42c;
             padding: 10px 15px;
@@ -139,82 +139,82 @@
             text-decoration: none;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-    
+
         /* Chart Styles */
         #reportsChart {
             margin-top: 20px;
         }
-    
+
         /* Responsive Design */
         @media (max-width: 1024px) {
             .sidebar {
                 width: 250px;
             }
-    
+
             main {
                 margin-left: 260px;
             }
-    
+
             header h2 {
                 font-size: 1.8rem;
             }
         }
-    
+
         @media (max-width: 768px) {
             .sidebar {
                 width: 220px;
             }
-    
+
             main {
                 margin-left: 230px;
             }
-    
+
             .card a {
                 padding: 15px;
             }
-    
+
             .card-title {
                 font-size: 1.1rem;
             }
-    
+
             .card-text {
                 font-size: 0.9rem;
             }
-    
+
             header h2 {
                 font-size: 1.6rem;
             }
         }
-    
+
         @media (max-width: 576px) {
             .sidebar {
                 position: relative;
                 width: 100%;
                 height: auto;
             }
-    
+
             main {
                 margin-left: 0;
                 padding: 10px;
             }
-    
+
             header h2 {
                 font-size: 1.4rem;
             }
-    
+
             .card a {
                 padding: 10px;
             }
-    
+
             .card-title {
                 font-size: 1rem;
             }
-    
+
             .card-text {
                 font-size: 0.8rem;
             }
         }
-    </style>    
+    </style>
 </head>
 
 <body>
@@ -263,7 +263,7 @@
                         <div class="card">
                             <a href="#" class="card-body text-center">
                                 <h5 class="card-title">Pending Orders</h5>
-                                <p class="card-text"><strong>0</strong></p>
+                                <p class="card-text"><strong>{{ status_counts.pending }}</strong></p>
                             </a>
                         </div>
                     </div>
@@ -271,7 +271,7 @@
                         <div class="card">
                             <a href="#" class="card-body text-center">
                                 <h5 class="card-title">Download Label</h5>
-                                <p class="card-text"><strong>0</strong></p>
+                                <p class="card-text"><strong>{{ status_counts.ready_to_ship }}</strong></p>
                             </a>
                         </div>
                     </div>
@@ -279,15 +279,15 @@
                         <div class="card">
                             <a href="#" class="card-body text-center">
                                 <h5 class="card-title">Out Of Stock</h5>
-                                <p class="card-text"><strong>0</strong></p>
+                                <p class="card-text"><strong>{{ status_counts.shipped }}</strong></p>
                             </a>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="card">
                             <a href="#" class="card-body text-center">
-                                <h5 class="card-title">Low Stock</h5>
-                                <p class="card-text"><strong>0</strong></p>
+                                <h5 class="card-title">Cancelled Orders</h5>
+                                <p class="card-text"><strong>{{ status_counts.cancelled }}</strong></p>
                             </a>
                         </div>
                     </div>
@@ -316,14 +316,16 @@
                     <!-- Secondary Cards -->
                     <div class="col-md-6">
                         <div class="row g-3">
-                            <div class="col-md-6">
+                            {% for status, count in status_counts.items %}
+                            <div class="col-md-3">
                                 <div class="card">
                                     <a href="#" class="card-body text-center">
-                                        <h5 class="card-title">Views</h5>
-                                        <p class="card-text"><strong>0</strong></p>
+                                        <h5 class="card-title">{{ status|title }}</h5>
+                                        <p class="card-text"><strong>{{ count }}</strong></p>
                                     </a>
                                 </div>
                             </div>
+                            {% endfor %}
                             <div class="col-md-6">
                                 <div class="card">
                                     <a href="#" class="card-body text-center">

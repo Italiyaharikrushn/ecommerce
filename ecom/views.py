@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Product, User, Contact, About, CartItem, Cart, Order, OrderItem, BillingAddress, Payment, UserRole
+from .models import (Product, User, Contact, About, CartItem, Cart, Order, OrderItem, BillingAddress, Payment, UserRole )
 from django.contrib.auth.hashers import make_password, check_password
 from .utils import never_cache_custom, user, user_login_required
 from django.http import JsonResponse, HttpResponseNotAllowed
@@ -22,7 +22,7 @@ def notify_sellers(order):
         seller_orders[seller].append(item)
 
     for seller, items in seller_orders.items():
-        product_details = "\n".join([f"{item.quantity} x {item.product.product_name} (${item.total_price()})" for item in items])
+        product_details = "\n".join([f"{item.quantity} x {item.product.product_name} (${item.total_price()})"for item in items])
 
         email_subject = f"New Order Notification - Order #{order.id}"
         email_body = f"Dear {seller.name},\n\nYou have a new order. Here are the details:\n\n{product_details}\n\nThank you."
@@ -38,11 +38,11 @@ def register_user(request, role, template, redirect_url):
         gender = request.POST.get("gender")
 
         if User.objects.filter(email=email, role=role).exists():
-            context = {"name": name,"phone": phone,"gender": gender,"error": "Email already registered."}
+            context = {"name": name,"phone": phone,"gender": gender,"error": "Email already registered.",}
             return render(request, template, context)
 
         hashed_password = make_password(password)
-        User.objects.create(name=name, email=email, phone=phone, password=hashed_password, gender=gender, role=role)
+        User.objects.create(name=name, email=email, phone=phone, password=hashed_password, gender=gender, role=role,)
 
         return redirect(redirect_url)
     return render(request, template)
@@ -139,7 +139,7 @@ def seller_dashboard(request):
 
     seller_products = Product.objects.filter(seller_id=user_id)
 
-    order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related('order', 'product')
+    order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related("order", "product")
     seller_orders = {}
 
     for item in order_items:
@@ -150,7 +150,7 @@ def seller_dashboard(request):
         seller_orders[order_id]["items"].append(item)
         seller_orders[order_id]["total_price"] += item.product.price * item.quantity
 
-    return render(request, "seller/dashboard.html", {"name": seller.name,"products": seller_products,"orders": seller_orders.values(),})
+    return render(request,"seller/dashboard.html",{"name": seller.name,"products": seller_products,"orders": seller_orders.values(),},)
 
 @never_cache_custom
 def customer_dashboard(request):
@@ -185,7 +185,7 @@ def add_product(request):
         image = request.FILES.get("image")
 
         if not all([product_name, description, price, image]):
-            return render(request, "seller/add_product.html", {"error": "All fields are required."})
+            return render(request,"seller/add_product.html",{"error": "All fields are required."},)
 
         try:
             price = float(price)
@@ -194,17 +194,17 @@ def add_product(request):
 
             seller = User.objects.get(id=user_id, role=UserRole.SELLER_OWNER)
 
-            Product.objects.create(product_name=product_name, description=description, price=price, image=image, seller=seller,)
+            Product.objects.create(product_name=product_name,description=description,price=price,image=image,seller=seller,)
             return redirect("product_list")
 
         except ValueError:
-            return render(request,"seller/add_product.html",{"error": "Price must be a valid positive number.", "name": name})
-        
+            return render(request,"seller/add_product.html",{"error": "Price must be a valid positive number.", "name": name},)
+
         except ObjectDoesNotExist:
-            return render(request,"seller/add_product.html",{"error": "Seller account not found or unauthorized.", "name": name})
-        
+            return render(request,"seller/add_product.html",{"error": "Seller account not found or unauthorized.", "name": name},)
+
         except Exception as e:
-            return render(request,"seller/add_product.html",{"error": f"An unexpected error occurred: {e}", "name": name})
+            return render(request,"seller/add_product.html",{"error": f"An unexpected error occurred: {e}", "name": name},)
 
     return render(request, "seller/add_product.html", {"name": name})
 
@@ -236,7 +236,7 @@ def product_list(request):
 def delete_product(request, product_id):
     if request.session.get("user_role") != UserRole.SELLER_OWNER:
         messages.error(request, "You do not have permission to perform this action.")
-        return redirect('product_list')
+        return redirect("product_list")
 
     user_id = request.session.get("user_id")
 
@@ -244,7 +244,7 @@ def delete_product(request, product_id):
 
     if product.seller_id != user_id:
         messages.error(request, "You do not have permission to delete this product.")
-        return redirect('product_list')
+        return redirect("product_list")
 
     product.delete()
     messages.success(request, "Product deleted successfully.")
@@ -273,7 +273,7 @@ def update_product(request, product_id):
         image = request.FILES.get("image")
 
         if not all([product_name, description, price]):
-            return render(request, "seller/update_product.html", {"error": "All fields are required.", "product": product})
+            return render(request,"seller/update_product.html",{"error": "All fields are required.", "product": product},)
 
         try:
             price = float(price)
@@ -291,11 +291,10 @@ def update_product(request, product_id):
             return redirect("product_list")
 
         except ValueError:
-            return render(request,"seller/update_product.html",{"error": "Price must be a valid positive number.", "product": product})
+            return render(request,"seller/update_product.html",{"error": "Price must be a valid positive number.", "product": product},)
 
         except Exception as e:
-            return render(request,"seller/update_product.html",{"error": f"An unexpected error occurred: {e}", "product": product})
-
+            return render(request,"seller/update_product.html",{"error": f"An unexpected error occurred: {e}", "product": product},)
 
     return render(request, "seller/update_product.html", {"product": product, "name": name})
 
@@ -340,7 +339,7 @@ def get_cart(request):
     cart_items = cart.cart_items.all()
     total_price = sum(item.product.price * item.quantity for item in cart_items)
 
-    return render(request, "product_details/cart.html", {"cart": cart, "cart_items": cart_items, "total_price": total_price,})
+    return render(request,"product_details/cart.html",{"cart": cart,"cart_items": cart_items,"total_price": total_price,},)
 
 # Add to cart view
 @never_cache_custom
@@ -377,8 +376,7 @@ def update_cart(request):
         total_price = sum(item.product.price * item.quantity for item in cart.cart_items.all())
 
         return JsonResponse(
-            {"success": True, "item_total_price": cart_item.total_price(), "cart_total_price": total_price}
-        )
+            {"success": True,"item_total_price": cart_item.total_price(),"cart_total_price": total_price,})
 
     return HttpResponseNotAllowed(["POST"])
 
@@ -404,7 +402,7 @@ def checkout(request):
     billing_address, _ = BillingAddress.objects.get_or_create(user_id=user_id)
 
     if request.method == "POST":
-        fields = ["fullname", "street_address", "city", "state", "pin_code", "country", "contact_number"]
+        fields = ["fullname","street_address","city","state","pin_code","country","contact_number",]
         for field in fields:
             setattr(billing_address, field, request.POST.get(field))
         billing_address.save()
@@ -413,15 +411,7 @@ def checkout(request):
 
         dispatch_date = date.today() + timedelta(days=2)
 
-        order_items = [
-            OrderItem(
-                order=order,
-                product=item.product,
-                quantity=item.quantity,
-                dispatch_date=dispatch_date
-            )
-            for item in cart.cart_items.all()
-        ]
+        order_items = [OrderItem(order=order,product=item.product,quantity=item.quantity,dispatch_date=dispatch_date,)for item in cart.cart_items.all()]
         OrderItem.objects.bulk_create(order_items)
 
         notify_sellers(order)
@@ -429,7 +419,7 @@ def checkout(request):
         cart.cart_items.all().delete()
         return redirect("payment_view", order_id=order.id)
 
-    return render(request,"product_details/checkout.html",{"cart": cart, "billing_address": billing_address, "total_price": cart.total_price()},)
+    return render(request,"product_details/checkout.html",{"cart": cart,"billing_address": billing_address,"total_price": cart.total_price(),},)
 
 # Payment view
 @never_cache_custom
@@ -455,7 +445,7 @@ def payment_view(request, order_id):
 # Order success view
 def order_success(request, order_id):
     try:
-        order = Order.objects.prefetch_related('order_items__product__seller').get(id=order_id)
+        order = Order.objects.prefetch_related("order_items__product__seller").get(id=order_id)
     except Order.DoesNotExist:
         return redirect("home_view")
 
@@ -471,7 +461,7 @@ def my_orders_view(request):
     if user_role == UserRole.CUSTOMER:
         orders = Order.objects.filter(user=user)
         return render(request, "product_details/my_orders.html", {"orders": orders, "name": name})
-    
+
     else:
         raise PermissionDenied("You do not have permission to view this page.")
 
@@ -487,17 +477,13 @@ def view_orders(request):
     except User.DoesNotExist:
         raise PermissionDenied("Seller not found.")
 
-    order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related('order', 'product')
+    order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related("order", "product")
 
     orders_dict = {}
     today = date.today()
     two_days_from_today = today + timedelta(days=2)
 
-    status_counts = {
-        'onhold': 0,
-        'pending': 0,
-        'ready_to_ship': 0,
-    }
+    status_counts = {"onhold": 0,"pending": 0,"ready_to_ship": 0,}
 
     for item in order_items:
         order_id = item.order.id
@@ -507,28 +493,18 @@ def view_orders(request):
             status_counts[order_status] += 1
 
         if order_id not in orders_dict:
-            orders_dict[order_id] = {
-                "order": item.order,
-                "items": [],
-                "total_price": 0,
-            }
+            orders_dict[order_id] = {"order": item.order,"items": [],"total_price": 0,}
 
         orders_dict[order_id]["items"].append(item)
         orders_dict[order_id]["total_price"] += item.product.price * item.quantity
 
         if item.dispatch_date:
             if today > item.dispatch_date:
-                messages.error(request, f"Order item '{item.product.product_name}' has breached the dispatch date!")
+                messages.error(request,f"Order item '{item.product.product_name}' has breached the dispatch date!",)
             elif two_days_from_today >= item.dispatch_date:
-                messages.warning(request, f"Order item '{item.product.product_name}' is nearing the dispatch date!")
+                messages.warning(request,f"Order item '{item.product.product_name}' is nearing the dispatch date!",)
 
-    return render(request, "seller/order.html", {
-        "name": seller.name,
-        "orders": orders_dict.values(),
-        "today": today,
-        "two_days_from_today": two_days_from_today,
-        "status_counts": status_counts,
-    })
+    return render(request,"seller/order.html",{"name": seller.name,"orders": orders_dict.values(),"today": today,"two_days_from_today": two_days_from_today,"status_counts": status_counts,},)
 
 def cancel_order_item(request, item_id):
     if request.method == "POST":
@@ -537,7 +513,7 @@ def cancel_order_item(request, item_id):
             return redirect("login_seller")
 
         order_item = OrderItem.objects.get(id=item_id)
-        
+
         if order_item.product.seller.id != user_id:
             raise PermissionDenied("You are not authorized to cancel this order item.")
 
@@ -561,19 +537,19 @@ def accept_order(request, item_id):
             return redirect("login_seller")
 
         try:
-            order_item = OrderItem.objects.select_related('product__seller').get(id=item_id)
+            order_item = OrderItem.objects.select_related("product__seller").get(id=item_id)
 
             if order_item.product.seller.id != user_id:
                 raise PermissionDenied("You are not authorized to accept this order item.")
 
             order_item.status = "ready_to_ship"
             order_item.save()
-            
+
             order = order_item.order
             order.status = "Shipped"
             order.save()
 
         except OrderItem.DoesNotExist:
             raise PermissionDenied("Order item not found.")
-        
+
         return redirect("view_orders")
