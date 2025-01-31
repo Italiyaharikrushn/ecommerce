@@ -11,7 +11,7 @@ def get_image_upload_to(instance, filename):
 
 class UserRole(models.TextChoices):
     CUSTOMER = 'ROLE_CUSTOMER', 'Customer'
-    SELLER_OWNER = 'ROLE_SELLER_OWNER', 'Seller Owner'
+    SELLER_OWNER = 'seller_owner', 'Seller Owner'
     ADMIN = 'ROLE_ADMIN', 'Admin'
 
 class User(models.Model):
@@ -169,6 +169,7 @@ class BillingAddress(models.Model):
 
     def full_shipping_address(self):
         return f"{self.shipping_address}, {self.shipping_city}, {self.shipping_state}, {self.shipping_pincode}, {self.shipping_country}"
+
 class Payment(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="payments")
     amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -196,9 +197,10 @@ class ShippingAddress(models.Model):
         return f"{self.BusinessName}, {self.City}"
 
 class BankDetails(models.Model):
-    BankAccountNo = models.CharField(max_length=20, validators=[MinLengthValidator(9)],verbose_name="Bank Account Number")
-    IFSCCode = models.CharField(max_length=11, validators=[MinLengthValidator(11)],verbose_name="IFSC Code")
-    AccountHolderName = models.CharField(max_length=100, verbose_name="Account Holder Name")
+    seller = models.ForeignKey(User, on_delete=models.CASCADE)
+    BankAccountNo = models.CharField(max_length=50, null=True, blank=True)
+    IFSCCode = models.CharField(max_length=50, null=True, blank=True)
+    AccountHolderName = models.CharField(max_length=100, null=True, blank=True)
 
     class Meta:
         verbose_name = "Bank Detail"
