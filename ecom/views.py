@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import (Product, User, Contact, About, CartItem, Cart, Order, OrderItem, BillingAddress, Payment, UserRole )
+from .models import (Product, User, Contact, About, CartItem, Cart, Order, OrderItem, BillingAddress, Payment, UserRole, ShippingAddress, BankDetails )
 from django.contrib.auth.hashers import make_password, check_password
 from .utils import never_cache_custom, user, user_login_required
 from django.http import JsonResponse, HttpResponseNotAllowed
@@ -56,7 +56,40 @@ def register_customer(request):
 @never_cache_custom
 @user
 def register_seller(request):
-    return register_user(request, UserRole.SELLER_OWNER, "seller/register.html", "login_seller")
+    if request.method == 'POST':
+        # First, create the user (seller)
+        user = User.objects.create(
+            name=request.POST['name'],
+            email=request.POST['email'],
+            password=request.POST['password'],
+        )
+
+        # Create ShippingAddress
+        shipping_address = ShippingAddress(
+            seller=user,  # Link to the user (seller)
+            BusinessName=request.POST['business_name'],
+            BusinessAddress=request.POST['business_address'],
+            City=request.POST['city'],
+            state=request.POST['state'],
+            pincode=request.POST['pincode'],
+            country=request.POST['country']
+        )
+        shipping_address.save()  # Save ShippingAddress to the database
+
+        # Create BankDetails
+        bank_details = BankDetails(
+            seller=user,  # Link to the user (seller)
+            BankAccountNo=request.POST['bank_account'],
+            IFSCCode=request.POST['ifsc'],
+            AccountHolderName=request.POST['account_holder_name']
+        )
+        bank_details.save()  # Save BankDetails to the database
+
+        # Optionally, display a success message
+        messages.success(request, "Seller registration successful!")
+        return redirect('seller_dashboard')  # Redirect to seller dashboard after successful registration
+    
+    return render(request, 'seller/register.html')
 
 @never_cache_custom
 @user

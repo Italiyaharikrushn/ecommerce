@@ -270,13 +270,8 @@
                             {% for product in products %}
                             <tr>
                                 <td class="text-center">
-                                    {% if product.image %}
                                     <img src="{{ product.image.url }}" alt="{{ product.product_name }}"
-                                        class="img-thumbnail" style="width: 50px; height: 50px;">
-                                    {% else %}
-                                    <img src="{% static 'images/default_product.png' %}" alt="Default Product"
-                                        class="img-thumbnail" style="width: 50px; height: 50px;">
-                                    {% endif %}
+                                        class="img-thumbnail" style="width: 50px; height: 50px;"> 
                                 </td>
                                 <td>{{ product.product_name }}</td>
                                 <td>₹{{ product.price }}</td>
