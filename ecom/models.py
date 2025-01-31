@@ -141,36 +141,34 @@ class OrderItem(models.Model):
 
 class BillingAddress(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="billing_addresses")
-    fullname = models.CharField(max_length=255)
-    address = models.TextField()
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100, blank=True, null=True)
-    pincode = models.CharField(max_length=6)
-    country = models.CharField(max_length=100)
-    contact_number = models.CharField(max_length=14)
+    order = models.OneToOneField("Order", on_delete=models.CASCADE, related_name="billing_address", null=True, blank=True)
+
+    # Billing Address
+    billing_fullname = models.CharField(max_length=255)
+    billing_address = models.TextField()
+    billing_city = models.CharField(max_length=100)
+    billing_state = models.CharField(max_length=100, blank=True, null=True)
+    billing_pincode = models.CharField(max_length=6)
+    billing_country = models.CharField(max_length=100)
+    billing_contact_number = models.CharField(max_length=14)
+
+    # Shipping Address (Now part of the same table)
+    shipping_fullname = models.CharField(max_length=255)
+    shipping_address = models.TextField()
+    shipping_city = models.CharField(max_length=100)
+    shipping_state = models.CharField(max_length=100, blank=True, null=True)
+    shipping_pincode = models.CharField(max_length=6)
+    shipping_country = models.CharField(max_length=100)
+    shipping_contact_number = models.CharField(max_length=14)
 
     def __str__(self):
-        return f"Billing Address for {self.fullname} ({self.user.name})"
+        return f"Billing Address for {self.billing_fullname} ({self.user.username})"
 
-    def full_address(self):
-        return f"{self.address}, {self.city}, {self.state}, {self.pincode}, {self.country}"
+    def full_billing_address(self):
+        return f"{self.billing_address}, {self.billing_city}, {self.billing_state}, {self.billing_pincode}, {self.billing_country}"
 
-class ShipToAddress(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="shipping_addresses")
-    fullname = models.CharField(max_length=255)
-    address = models.TextField()
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100, blank=True, null=True)
-    pincode = models.CharField(max_length=6)
-    country = models.CharField(max_length=100)
-    contact_number = models.CharField(max_length=14)
-
-    def __str__(self):
-        return f"Shipping Address for {self.fullname} ({self.user.name})"
-
-    def full_address(self):
-        return f"{self.address}, {self.city}, {self.state}, {self.pincode}, {self.country}"
-
+    def full_shipping_address(self):
+        return f"{self.shipping_address}, {self.shipping_city}, {self.shipping_state}, {self.shipping_pincode}, {self.shipping_country}"
 class Payment(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="payments")
     amount = models.DecimalField(max_digits=10, decimal_places=2)
