@@ -105,99 +105,102 @@
 	<!-- Start Billing Section -->
 	<section class="untree_co">
 		<div class="container my-4">
-			<div class="row">
-				<div class="col-md-4">
-					<h4>Billing Address</h4>
-					<div class="form-group">
-						<label for="fullname">Full Name</label>
-						<input type="text" class="form-control" id="fullname" name="fullname" value="{{ billing_address.fullname }}" placeholder="Enter your full name">
+			<form method="POST" action="{% url 'checkout' %}">
+				{% csrf_token %}
+				<div class="row">
+					<div class="col-md-4">
+						<h4>Billing Address</h4>
+						<div class="form-group">
+							<label for="billing_fullname">Full Name</label>
+							<input type="text" class="form-control" id="billing_fullname" name="billing_fullname" value="{{ billing_address.billing_fullname }}" placeholder="Enter your full name">
+						</div>
+						<div class="form-group">
+							<label for="billing_address">Street Address</label>
+							<input type="text" class="form-control" id="billing_address" name="billing_address" value="{{ billing_address.billing_address }}" placeholder="Enter your street address">
+						</div>
+						<div class="form-group">
+							<label for="billing_city">City</label>
+							<input type="text" class="form-control" id="billing_city" name="billing_city" value="{{ billing_address.billing_city }}" placeholder="Enter your city">
+						</div>
+						<div class="form-group">
+							<label for="billing_state">State</label>
+							<input type="text" class="form-control" id="billing_state" name="billing_state" value="{{ billing_address.billing_state }}" placeholder="Enter your state">
+						</div>
+						<div class="form-group">
+							<label for="billing_pincode">Pin Code</label>
+							<input type="text" class="form-control" id="billing_pincode" name="billing_pincode" value="{{ billing_address.billing_pincode }}" placeholder="Enter your pin code">
+						</div>
+						<div class="form-group">
+							<label for="billing_country">Country</label>
+							<input type="text" class="form-control" id="billing_country" name="billing_country" value="{{ billing_address.billing_country }}" placeholder="Enter your country">
+						</div>
+						<div class="form-group">
+							<label for="billing_contact_number">Contact Number</label>
+							<input type="text" class="form-control" id="billing_contact_number" name="billing_contact_number" value="{{ billing_address.billing_contact_number }}" placeholder="Enter your contact number">
+						</div>
 					</div>
-					<div class="form-group">
-						<label for="street_address">Street Address</label>
-						<input type="text" class="form-control" id="street_address" name="street_address" value="{{ billing_address.address }}" placeholder="Enter your street address">
-					</div>
-					<div class="form-group">
-						<label for="city">City</label>
-						<input type="text" class="form-control" id="city" name="city" value="{{ billing_address.city }}" placeholder="Enter your city">
-					</div>
-					<div class="form-group">
-						<label for="state">State</label>
-						<input type="text" class="form-control" id="state" name="state" value="{{ billing_address.state }}" placeholder="Enter your state">
-					</div>
-					<div class="form-group">
-						<label for="pin_code">Pin Code</label>
-						<input type="text" class="form-control" id="pin_code" name="pin_code" value="{{ billing_address.pincode }}" placeholder="Enter your pin code">
-					</div>
-					<div class="form-group">
-						<label for="country">Country</label>
-						<input type="text" class="form-control" id="country" name="country" value="{{ billing_address.country }}" placeholder="Enter your country">
-					</div>
-					<div class="form-group">
-						<label for="contact_number">Contact Number</label>
-						<input type="text" class="form-control" id="contact_number" name="contact_number" value="{{ billing_address.contact_number }}" placeholder="Enter your contact number">
-					</div>
-				</div>
 	
-				<!-- Shipping Address Section -->
-				<div class="col-md-4">
-					<h4>Shipping Address</h4>
-					<div class="form-group">
-						<label for="ship_fullname">Full Name</label>
-						<input type="text" class="form-control" id="ship_fullname" name="ship_fullname" value="{{ shipping_address.fullname }}" placeholder="Enter full name">
+					<!-- Shipping Address Section -->
+					<div class="col-md-4">
+						<h4>Shipping Address</h4>
+						<div class="form-group">
+							<label for="shipping_fullname">Full Name</label>
+							<input type="text" class="form-control" id="shipping_fullname" name="shipping_fullname" value="{{ billing_address.shipping_fullname }}" placeholder="Enter full name">
+						</div>
+						<div class="form-group">
+							<label for="shipping_address">Street Address</label>
+							<input type="text" class="form-control" id="shipping_address" name="shipping_address" value="{{ billing_address.shipping_address }}" placeholder="Enter street address">
+						</div>
+						<div class="form-group">
+							<label for="shipping_city">City</label>
+							<input type="text" class="form-control" id="shipping_city" name="shipping_city" value="{{ billing_address.shipping_city }}" placeholder="Enter city">
+						</div>
+						<div class="form-group">
+							<label for="shipping_state">State</label>
+							<input type="text" class="form-control" id="shipping_state" name="shipping_state" value="{{ billing_address.shipping_state }}" placeholder="Enter state">
+						</div>
+						<div class="form-group">
+							<label for="shipping_pincode">Pin Code</label>
+							<input type="text" class="form-control" id="shipping_pincode" name="shipping_pincode" value="{{ billing_address.shipping_pincode }}" placeholder="Enter pin code">
+						</div>
+						<div class="form-group">
+							<label for="shipping_country">Country</label>
+							<input type="text" class="form-control" id="shipping_country" name="shipping_country" value="{{ billing_address.shipping_country }}" placeholder="Enter country">
+						</div>
+						<div class="form-group">
+							<label for="shipping_contact_number">Contact Number</label>
+							<input type="text" class="form-control" id="shipping_contact_number" name="shipping_contact_number" value="{{ billing_address.shipping_contact_number }}" placeholder="Enter contact number">
+						</div>
 					</div>
-					<div class="form-group">
-						<label for="ship_street_address">Street Address</label>
-						<input type="text" class="form-control" id="ship_street_address" name="ship_street_address" value="{{ shipping_address.address }}" placeholder="Enter street address">
-					</div>
-					<div class="form-group">
-						<label for="ship_city">City</label>
-						<input type="text" class="form-control" id="ship_city" name="ship_city" value="{{ shipping_address.city }}" placeholder="Enter city">
-					</div>
-					<div class="form-group">
-						<label for="ship_state">State</label>
-						<input type="text" class="form-control" id="ship_state" name="ship_state" value="{{ shipping_address.state }}" placeholder="Enter state">
-					</div>
-					<div class="form-group">
-						<label for="ship_pin_code">Pin Code</label>
-						<input type="text" class="form-control" id="ship_pin_code" name="ship_pin_code" value="{{ shipping_address.pincode }}" placeholder="Enter pin code">
-					</div>
-					<div class="form-group">
-						<label for="ship_country">Country</label>
-						<input type="text" class="form-control" id="ship_country" name="ship_country" value="{{ shipping_address.country }}" placeholder="Enter country">
-					</div>
-					<div class="form-group">
-						<label for="ship_contact_number">Contact Number</label>
-						<input type="text" class="form-control" id="ship_contact_number" name="ship_contact_number" value="{{ shipping_address.contact_number }}" placeholder="Enter contact number">
-					</div>
-				</div>
 	
-				<!-- Order Summary Section -->
-				<div class="col-md-4">
-					<h4>Order Summary</h4>
-					<table class="table">
-						<thead>
-							<tr>
-								<th>Product</th>
-								<th>Price</th>
-								<th>Quantity</th>
-								<th>Total</th>
-							</tr>
-						</thead>
-						<tbody>
-							{% for item in cart.cart_items.all %}
-							<tr>
-								<td>{{ item.product.product_name }}</td>
-								<td>₹{{ item.product.price }}</td>
-								<td>{{ item.quantity }}</td>
-								<td>₹{{ item.total_price }}</td>
-							</tr>
-							{% endfor %}
-						</tbody>
-					</table>
-					<p><strong>Total Price:</strong> ₹{{ total_price }}</p>
-					<button type="submit" class="btn btn-black">Place Order</button>
+					<!-- Order Summary Section -->
+					<div class="col-md-4">
+						<h4>Order Summary</h4>
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Product</th>
+									<th>Price</th>
+									<th>Quantity</th>
+									<th>Total</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for item in cart.cart_items.all %}
+								<tr>
+									<td>{{ item.product.product_name }}</td>
+									<td>₹{{ item.product.price }}</td>
+									<td>{{ item.quantity }}</td>
+									<td>₹{{ item.total_price }}</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+						<p><strong>Total Price:</strong> ₹{{ total_price }}</p>
+						<button type="submit" class="btn btn-black">Place Order</button>
+					</div>
 				</div>
-			</div>
+			</form>
 		</div>
 	</section>
 	<!-- End Billing Section -->

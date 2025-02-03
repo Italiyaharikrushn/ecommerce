@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.http import HttpResponseForbidden
 from datetime import date, timedelta
+from django.db import transaction
 
 # Notify sellers about new order
 def notify_sellers(order):
@@ -41,10 +42,11 @@ def register_user(request, role, template, redirect_url):
             context = {"name": name,"phone": phone,"gender": gender,"error": "Email already registered.",}
             return render(request, template, context)
 
-        hashed_password = make_password(password)
-        User.objects.create(name=name, email=email, phone=phone, password=hashed_password, gender=gender, role=role,)
+        User.objects.create(name=name,email=email,phone=phone,password=make_password(password),gender=gender,role=role,)
 
+        messages.success(request, "Registration successful! Please log in.")
         return redirect(redirect_url)
+
     return render(request, template)
 
 # Views for user roles (Customer, Seller, Admin)
@@ -57,38 +59,41 @@ def register_customer(request):
 @user
 def register_seller(request):
     if request.method == 'POST':
-        # First, create the user (seller)
-        user = User.objects.create(
-            name=request.POST['name'],
-            email=request.POST['email'],
-            password=request.POST['password'],
-        )
+        try:
+            with transaction.atomic():
+                user = User.objects.create(
+                    name=request.POST['name'],
+                    email=request.POST['email'],
+                    phone=request.POST['phone'],
+                    password=make_password(request.POST['password']),
+                    gender = request.POST.get("gender"),
+                    role=UserRole.SELLER_OWNER
+                )
 
-        # Create ShippingAddress
-        shipping_address = ShippingAddress(
-            seller=user,  # Link to the user (seller)
-            BusinessName=request.POST['business_name'],
-            BusinessAddress=request.POST['business_address'],
-            City=request.POST['city'],
-            state=request.POST['state'],
-            pincode=request.POST['pincode'],
-            country=request.POST['country']
-        )
-        shipping_address.save()  # Save ShippingAddress to the database
+                ShippingAddress.objects.create(
+                    seller=user,
+                    BusinessName=request.POST['business_name'],
+                    BusinessAddress=request.POST['business_address'],
+                    City=request.POST['city'],
+                    state=request.POST['state'],
+                    pincode=request.POST['pincode'],
+                    country=request.POST['country']
+                )
 
-        # Create BankDetails
-        bank_details = BankDetails(
-            seller=user,  # Link to the user (seller)
-            BankAccountNo=request.POST['bank_account'],
-            IFSCCode=request.POST['ifsc'],
-            AccountHolderName=request.POST['account_holder_name']
-        )
-        bank_details.save()  # Save BankDetails to the database
+                BankDetails.objects.create(
+                    seller=user,
+                    BankAccountNo=request.POST['bank_account'],
+                    IFSCCode=request.POST['ifsc'],
+                    AccountHolderName=request.POST['account_holder_name']
+                )
 
-        # Optionally, display a success message
-        messages.success(request, "Seller registration successful!")
-        return redirect('seller_dashboard')  # Redirect to seller dashboard after successful registration
-    
+                messages.success(request, "Seller registration successful!")
+                return redirect('seller_dashboard')
+
+        except Exception as e:
+            messages.error(request, f"Error during registration: {str(e)}")
+            return render(request, 'seller/register.html')
+
     return render(request, 'seller/register.html')
 
 @never_cache_custom
@@ -426,33 +431,67 @@ def remove_cart(request):
 @never_cache_custom
 @user_login_required
 def checkout(request):
-    user_id = request.session["user_id"]
+    user_id = request.session.get("user_id")
+    
+    if not user_id:
+        messages.error(request, "You need to be logged in to proceed.")
+        return redirect("login")
+
     cart = Cart.objects.filter(user_id=user_id).first()
 
-    if not cart:
+    if not cart or not cart.cart_items.exists():
+        messages.error(request, "Your cart is empty.")
         return redirect("shop_view")
 
     billing_address, _ = BillingAddress.objects.get_or_create(user_id=user_id)
 
     if request.method == "POST":
-        fields = ["fullname","street_address","city","state","pin_code","country","contact_number",]
-        for field in fields:
+        billing_fields = [
+            "billing_fullname", "billing_address", "billing_city", "billing_state",
+            "billing_pincode", "billing_country", "billing_contact_number",
+            "shipping_fullname", "shipping_address", "shipping_city", "shipping_state",
+            "shipping_pincode", "shipping_country", "shipping_contact_number"
+        ]
+
+        for field in billing_fields:
             setattr(billing_address, field, request.POST.get(field))
+        
         billing_address.save()
 
-        order = Order.objects.create(user_id=user_id, total_price=cart.total_price())
+        try:
+            with transaction.atomic():
+                order = Order.objects.create(user_id=user_id, total_price=cart.total_price())
 
-        dispatch_date = date.today() + timedelta(days=2)
+                billing_address.order = order
+                billing_address.save()
 
-        order_items = [OrderItem(order=order,product=item.product,quantity=item.quantity,dispatch_date=dispatch_date,)for item in cart.cart_items.all()]
-        OrderItem.objects.bulk_create(order_items)
+                dispatch_date = date.today() + timedelta(days=2)
 
-        notify_sellers(order)
+                order_items = [
+                    OrderItem(
+                        order=order,
+                        product=item.product,
+                        quantity=item.quantity,
+                        dispatch_date=dispatch_date,
+                    ) for item in cart.cart_items.all()
+                ]
+                OrderItem.objects.bulk_create(order_items)
 
-        cart.cart_items.all().delete()
-        return redirect("payment_view", order_id=order.id)
+                notify_sellers(order)
 
-    return render(request,"product_details/checkout.html",{"cart": cart,"billing_address": billing_address,"total_price": cart.total_price(),},)
+                cart.cart_items.all().delete()
+
+                messages.success(request, "Order placed successfully!")
+                return redirect("payment_view", order_id=order.id)
+        except Exception as e:
+            messages.error(request, f"An error occurred during checkout: {e}")
+            return redirect("checkout")
+
+    return render(request, "product_details/checkout.html", {
+        "cart": cart,
+        "billing_address": billing_address,
+        "total_price": cart.total_price(),
+    })
 
 # Payment view
 @never_cache_custom
