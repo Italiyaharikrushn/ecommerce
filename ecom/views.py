@@ -657,29 +657,26 @@ def accept_order(request, item_id):
 
         return redirect("view_orders")
 
-from django.http import HttpResponse
-from io import BytesIO
-from xhtml2pdf import pisa
-from django.template.loader import get_template
-from .models import Order, BillingAddress
-
 def generate_invoice(request, order_id):
     try:
         order = Order.objects.get(id=order_id)
+
+        # if order.Product.seller:
+        #     seller_address = ShippingAddress.objects.filter(seller=order.seller).first()
+        # else:
+        #     seller_address = None
         
         if not hasattr(order, 'billing_address') or order.billing_address is None:
             billing_address = BillingAddress.objects.create(
                 user=order.user,
                 order=order,
                 billing_fullname=order.user.name,
-                billing_address="Default Address",
                 billing_city="Default City",
                 billing_state="Default State",
                 billing_pincode="000000",
                 billing_country="Default Country",
                 billing_contact_number="0000000000",
                 shipping_fullname=order.user.name,
-                shipping_address="Default Address",
                 shipping_city="Default City",
                 shipping_state="Default State",
                 shipping_pincode="000000",
@@ -690,6 +687,7 @@ def generate_invoice(request, order_id):
             billing_address = order.billing_address
 
         template_path = 'seller/label.html'
+        # context = {'order': order, 'billing_address': billing_address, 'seller_address': seller_address}
         context = {'order': order, 'billing_address': billing_address}
         
         template = get_template(template_path)
