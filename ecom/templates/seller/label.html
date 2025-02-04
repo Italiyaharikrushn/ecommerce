@@ -113,19 +113,19 @@
 <body>
 
     <div class="container">
-        <h3>Billing Address:</h3>
+        <h3>Customer Address:</h3>
         <p>{{ order.billing_address.billing_fullname }}</p>
         <p>{{ order.billing_address.billing_address }}, {{ order.billing_address.billing_city }}</p>
         <p>{{ order.billing_address.billing_state }}, {{ order.billing_address.billing_pincode }}</p>
         <p>{{ order.billing_address.billing_country }}</p>
 
-        <h3>Shipping Address:</h3>
+        <h3>Ship To:</h3>
         <p>{{ order.billing_address.shipping_fullname }}</p>
         <p>{{ order.billing_address.shipping_address }}, {{ order.billing_address.shipping_city }}</p>
         <p>{{ order.billing_address.shipping_state }}, {{ order.billing_address.shipping_pincode }}</p>
         <p>{{ order.billing_address.shipping_country }}</p>
 
-        <h3>Seller's Shipping Address:</h3>
+        <h3>Shipping Address:</h3>
         <p>{{ order.seller.shippingaddress.business_name }}</p>
         <p>{{ order.seller.shippingaddress.business_address }}, {{ order.seller.shippingaddress.city }}</p>
         <p>{{ order.seller.shippingaddress.state }}, {{ order.seller.shippingaddress.pincode }}</p>
