@@ -584,20 +584,32 @@ def cancel_order_item(request, item_id):
         if request.session.get("user_role") != UserRole.SELLER_OWNER:
             return redirect("login_seller")
 
-        order_item = OrderItem.objects.get(id=item_id)
+        try:
+            order_item = OrderItem.objects.get(id=item_id)
 
-        if order_item.product.seller.id != user_id:
-            raise PermissionDenied("You are not authorized to cancel this order item.")
+            if order_item.product.seller.id != user_id:
+                raise PermissionDenied("You are not authorized to cancel this order item.")
 
-        order = order_item.order
-        order.total_price -= order_item.total_price()
+            order = order_item.order
+            order.total_price -= order_item.total_price()
 
-        order_item.delete()
+            order_item.delete()
 
-        order.save()
+            remaining_items = order.order_items.all()
+            if remaining_items.exists():
+                statuses = set(item.status for item in remaining_items)
 
-        if not order.order_items.exists():
-            order.delete()
+                if statuses == {"ready_to_ship"}:
+                    order.status = "Processing"
+                elif statuses == {"pending"}:
+                    order.status = "Pending"
+
+                order.save()
+            else:
+                order.delete()
+
+        except OrderItem.DoesNotExist:
+            raise PermissionDenied("Order item not found.")
 
         return redirect("view_orders")
 
@@ -609,16 +621,27 @@ def accept_order(request, item_id):
             return redirect("login_seller")
 
         try:
-            order_item = OrderItem.objects.select_related("product__seller").get(id=item_id)
+            order_item = OrderItem.objects.select_related("product__seller", "order").get(id=item_id)
 
             if order_item.product.seller.id != user_id:
                 raise PermissionDenied("You are not authorized to accept this order item.")
-
-            order_item.status = "ready_to_ship"
+            
+            order_item.status = "ready_to_ship"  
             order_item.save()
 
             order = order_item.order
-            order.status = "Shipped"
+            all_order_items = order.order_items.all()
+
+            item_statuses = {item.status.lower() for item in all_order_items}
+            if "pending" in item_statuses:
+                order.status = "Pending"
+            elif all(status == "ready_to_ship" for status in item_statuses):
+                order.status = "Processing"
+            elif all(status == "shipped" for status in item_statuses):
+                order.status = "Shipped"
+            elif all(status == "completed" for status in item_statuses):
+                order.status = "Completed"
+
             order.save()
 
         except OrderItem.DoesNotExist:

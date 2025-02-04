@@ -101,12 +101,12 @@ class Checkout(models.Model):
 
 class Order(models.Model):
     ORDER_STATUS_CHOICES = [
-        ("Pending", "Pending"),
-        ("Processing", "Processing"),
-        ("Shipped", "Shipped"),
-        ("Delivered", "Delivered"),
-        ("Cancelled", "Cancelled"),
-    ]
+			("Pending", "Pending"),
+			("Processing", "Processing"),
+			("Shipped", "Shipped"),
+			("Delivered", "Delivered"),
+			("Cancelled", "Cancelled"),
+		]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
     status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default="Pending")
@@ -121,11 +121,12 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('ready_to_ship', 'Ready_To_Ship'),
-        ('completed', 'Completed'),
-        ('cancelled', 'Cancelled'),
-    ]
+			("pending", "Pending"),
+			("ready_to_ship", "Ready_To_Ship"),
+			("shipped", "Shipped"),
+			("completed", "Completed"),
+			("cancelled", "Cancelled"),
+		]
 
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)

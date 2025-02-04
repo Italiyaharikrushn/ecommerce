@@ -124,13 +124,13 @@
 
 				<div class="collapse navbar-collapse" id="navbarsFurni">
 					<ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
-						<li class="nav-item active">
+						<li class="nav-item">
 							<a class="nav-link" href="{% url 'home_view' %}">Home</a>
 						</li>
 						<li class="nav-item">
 							<a class="nav-link" href="{% url 'shop_view' %}">Shop</a>
 						</li>
-						<li class="nav-item">
+						<li class="nav-item active">
 							<a class="nav-link" href="{% url 'my_orders' %}">My Order</a>
 						</li>
 						<li class="nav-item">
@@ -193,8 +193,20 @@
 				{% for order in orders %}
 				<tr>
 					<td>{{ order.id }}</td>
-					<td>{{ order.status }}</td>
-					<td>{{ order.total_price|floatformat:2 }}</td> <!-- Formatting total price -->
+					<td>
+						{% if order.status == "Pending" %}
+						<span class="badge bg-warning">Pending</span>
+						{% elif order.status == "Processing" %}
+						<span class="badge bg-info">Processing</span>
+						{% elif order.status == "Shipped" %}
+						<span class="badge bg-primary">Shipped</span>
+						{% elif order.status == "Completed" %}
+						<span class="badge bg-success">Completed</span>
+						{% else %}
+						<span class="badge bg-secondary">{{ order.status }}</span>
+						{% endif %}
+					</td>
+					<td>{{ order.total_price|floatformat:2 }}</td>
 					<td><a href="{% url 'order_success' order.id %}" class="btn btn-primary btn-sm">View Details</a>
 					</td>
 				</tr>
@@ -211,10 +223,10 @@
 	<footer class="footer-section">
 		<div class="container relative">
 
-			<div class="sofa-img">
+			<!-- <div class="sofa-img">
 				<img src="{% static 'images/sofa.png' %}" alt="Sofa" class="img-fluid">
 			</div>
-
+			
 			<div class="newsletter-section row">
 				<div class="col-lg-8">
 					<div class="subscription-form">
@@ -241,7 +253,7 @@
 						</form>
 					</div>
 				</div>
-			</div>
+			</div> -->
 
 			<div class="footer-main row g-5 mb-5">
 				<div class="col-lg-4">
