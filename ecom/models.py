@@ -142,7 +142,7 @@ class OrderItem(models.Model):
 
 class BillingAddress(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="billing_addresses")
-    order = models.OneToOneField("Order", on_delete=models.CASCADE, related_name="billing_address", null=True, blank=True)
+    order = models.OneToOneField("Order", on_delete=models.SET_NULL, related_name="billing_address", null=True, blank=True)
 
     # Billing Address
     billing_fullname = models.CharField(max_length=255)

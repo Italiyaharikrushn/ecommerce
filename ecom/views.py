@@ -12,6 +12,10 @@ from django.urls import reverse
 from django.http import HttpResponseForbidden
 from datetime import date, timedelta
 from django.db import transaction
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from io import BytesIO
+from django.http import HttpResponse
 
 # Notify sellers about new order
 def notify_sellers(order):
@@ -523,6 +527,10 @@ def order_success(request, order_id):
 
     return render(request,"product_details/thankyou.html",{"order": order, "seller": order.order_items.first().product.seller},)
 
+def seller_orders(request):
+    orders = Order.objects.all()
+    return render(request, 'seller/order.html', {'orders': orders})
+
 def my_orders_view(request):
     user_role = request.session.get("user_role")
     user_id = request.session.get("user_id")
@@ -648,3 +656,51 @@ def accept_order(request, item_id):
             raise PermissionDenied("Order item not found.")
 
         return redirect("view_orders")
+
+from django.http import HttpResponse
+from io import BytesIO
+from xhtml2pdf import pisa
+from django.template.loader import get_template
+from .models import Order, BillingAddress
+
+def generate_invoice(request, order_id):
+    try:
+        order = Order.objects.get(id=order_id)
+        
+        if not hasattr(order, 'billing_address') or order.billing_address is None:
+            billing_address = BillingAddress.objects.create(
+                user=order.user,
+                order=order,
+                billing_fullname=order.user.name,
+                billing_address="Default Address",
+                billing_city="Default City",
+                billing_state="Default State",
+                billing_pincode="000000",
+                billing_country="Default Country",
+                billing_contact_number="0000000000",
+                shipping_fullname=order.user.name,
+                shipping_address="Default Address",
+                shipping_city="Default City",
+                shipping_state="Default State",
+                shipping_pincode="000000",
+                shipping_country="Default Country",
+                shipping_contact_number="0000000000",
+            )
+        else:
+            billing_address = order.billing_address
+
+        template_path = 'seller/label.html'
+        context = {'order': order, 'billing_address': billing_address}
+        
+        template = get_template(template_path)
+        html = template.render(context)
+        
+        response = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), response)
+        
+        if not pdf.err:
+            return HttpResponse(response.getvalue(), content_type='application/pdf')
+        return HttpResponse('Error generating PDF', status=500)
+
+    except Order.DoesNotExist:
+        return HttpResponse('Order not found', status=404)

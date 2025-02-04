@@ -340,56 +340,57 @@
                                 <th>Quantity</th>
                                 <th>Dispatch Date/SLA</th>
                                 <th>Action</th>
-                                
                             </tr>
                         </thead>
                         <tbody>
                             {% for order_data in orders %}
-                            {% for item in order_data.items %}
-                            <tr class="order-row" data-status="{{ item.status }}">
-                                <td>
-                                    <img src="{{ item.product.image.url }}" alt="{{ item.product.product_name }}"
-                                        class="img-thumbnail" width="50">
-                                    <span>{{ item.product.description }}</span>
-                                </td>
-                                {% if forloop.first %}
-                                <td rowspan="{{ order_data.items|length }}">{{ item.product.product_name }}</td>
-                                <td rowspan="{{ order_data.items|length }}">{{ order_data.order.id }}</td>
-                                {% endif %}
-                                <td>{{ item.quantity }}</td>
-                                <td>
-                                    {% if item.status != "cancelled" %}
-                                    {{ item.dispatch_date|date:"Y-m-d" }}<br>
-                                    {% if item.dispatch_date and today > item.dispatch_date %}
-                                    <span class="badge bg-danger">Breached</span>
-                                    {% elif item.dispatch_date and two_days_from_today >= item.dispatch_date %}
-                                    <span class="badge bg-warning text-dark">Near Breach</span>
-                                    {% else %}
-                                    <span class="badge bg-success">On Time</span>
+                                {% for item in order_data.items %}
+                                <tr class="order-row" data-status="{{ item.status }}">
+                                    <td>
+                                        <img src="{{ item.product.image.url }}" alt="{{ item.product.product_name }}" class="img-thumbnail" width="50">
+                                        <span>{{ item.product.description }}</span>
+                                    </td>
+                                    {% if forloop.first %}
+                                        <td rowspan="{{ order_data.items|length }}">{{ item.product.product_name }}</td>
+                                        <td rowspan="{{ order_data.items|length }}">{{ order_data.order.id }}</td>
                                     {% endif %}
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if item.status != "cancelled" %}
-                                        {% if item.status == "ready_to_ship" %}
-                                            <form action="#" method="POST" class="d-inline">
-                                                {% csrf_token %}
-                                                <button class="btn btn-primary btn-sm">Download Label</button>
-                                            </form>
-                                        {% else %}
-                                            <form action="{% url 'accept_order' item.id %}" method="POST" class="d-inline">
-                                                {% csrf_token %}
-                                                <button class="btn btn-primary btn-sm">Accept</button>
-                                            </form>
-                                            <form action="{% url 'cancel_order_item' item.id %}" method="POST" class="d-inline">
-                                                {% csrf_token %}
-                                                <button class="btn btn-danger btn-sm">Cancel</button>
-                                            </form>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>
+                                        {% if item.status != "cancelled" %}
+                                            {{ item.dispatch_date|date:"Y-m-d" }}<br>
+                                            {% if item.dispatch_date and today > item.dispatch_date %}
+                                                <span class="badge bg-danger">Breached</span>
+                                            {% elif item.dispatch_date and two_days_from_today >= item.dispatch_date %}
+                                                <span class="badge bg-warning text-dark">Near Breach</span>
+                                            {% else %}
+                                                <span class="badge bg-success">On Time</span>
+                                            {% endif %}
                                         {% endif %}
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% if item.status != "cancelled" %}
+                                            {% if item.status == "ready_to_ship" %}
+                                                {% if order_data.order.id %}
+                                                    <form action="{% url 'invoice_view' order_data.order.id %}" method="GET" class="d-inline">
+                                                        <button class="btn btn-primary btn-sm">Download Invoice</button>
+                                                    </form>
+                                                {% else %}
+                                                    <p class="text-danger">Error: Order ID not found</p>
+                                                {% endif %}              
+                                            {% else %}
+                                                <form action="{% url 'accept_order' item.id %}" method="POST" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button class="btn btn-primary btn-sm">Accept</button>
+                                                </form>
+                                                <form action="{% url 'cancel_order_item' item.id %}" method="POST" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button class="btn btn-danger btn-sm">Cancel</button>
+                                                </form>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
                             {% endfor %}
                         </tbody>
                     </table>
