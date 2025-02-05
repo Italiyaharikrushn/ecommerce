@@ -207,7 +207,16 @@
 						{% endif %}
 					</td>
 					<td>{{ order.total_price|floatformat:2 }}</td>
-					<td><a href="{% url 'order_success' order.id %}" class="btn btn-primary btn-sm">View Details</a>
+					<td>
+						<!-- <a href="{% url 'order_success' order.id %}" class="btn btn-primary btn-sm">View Details</a> -->
+						<form action="{% url 'order_success' order.id %}" method="POST" class="d-inline">
+							{% csrf_token %}
+							<button class="btn btn-primary btn-sm">View Details</button>
+						</form>
+						<form action="#" method="POST" class="d-inline">
+							{% csrf_token %}
+							<button class="btn btn-danger btn-sm">Cancel</button>
+						</form>
 					</td>
 				</tr>
 				{% endfor %}
