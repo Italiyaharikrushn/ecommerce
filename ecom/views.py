@@ -103,7 +103,7 @@ def register_seller(request):
 @never_cache_custom
 @user
 def register_admin(request):
-    return register_user(request, UserRole.ADMIN, "admin/register.html", "login_admin")
+    return register_user(request, UserRole.ADMIN, "admins/register.html", "login_admin")
 
 # Helper function for user login
 def handle_login(request, role, template, redirect_url):
@@ -139,7 +139,7 @@ def login_seller(request):
 @never_cache_custom
 @user
 def login_admin(request):
-    return handle_login(request, UserRole.ADMIN, "admin/login.html", "admin_dashboard")
+    return handle_login(request, UserRole.ADMIN, "admins/login.html", "admin_dashboard")
 
 # Logout view
 def logout(request):
@@ -202,7 +202,9 @@ def customer_dashboard(request):
 
 @never_cache_custom
 def admin_dashboard(request):
-    return render(request, "admin/dashboard.html")
+    if request.session.get("user_role") != UserRole.ADMIN:
+        return redirect('customer_dashboard')
+    return render(request, "admins/dashboard.html")
 
 # Product-related views
 @never_cache_custom
