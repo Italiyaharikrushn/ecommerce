@@ -32,6 +32,7 @@ urlpatterns = [
 
     # Admin Dashboard
     path("admins/dashboard/", views.admin_dashboard, name="admin_dashboard"),
+    path("admins/tablesadta/", views.table_data, name="table_data"),
 
     # Product Management
     path("shop/", views.shop_view, name="shop_view"),

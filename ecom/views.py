@@ -153,16 +153,17 @@ def logout(request):
     else:
         return redirect("login_admin")
 
-# Home page view
-@never_cache_custom
 def home_view(request):
     user_role = request.session.get("user_role")
+
     if user_role == UserRole.SELLER_OWNER:
         return redirect("seller_dashboard")
     elif user_role == UserRole.CUSTOMER:
         products = Product.objects.all()
         return render(request, "product_details/index.html", {"products": products})
-    return render(request, "product_details/index.html")
+    elif user_role == UserRole.ADMIN:
+        return redirect("admin_dashboard")
+    return redirect("login")
 
 # Dashboard views
 @never_cache_custom
@@ -704,3 +705,12 @@ def generate_invoice(request, order_id):
 
     except Order.DoesNotExist:
         return HttpResponse('Order not found', status=404)
+
+def table_data(request):
+    users = User.objects.exclude(role="ROLE_ADMIN")
+    products = Product.objects.all()
+    context = {
+        "users": users,
+        "products": products,
+    }
+    return render(request, "admins/tables-data.html", context)
