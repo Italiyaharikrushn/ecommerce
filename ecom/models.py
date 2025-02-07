@@ -132,6 +132,7 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending')
+    order_date = models.DateField(blank=True, null=True, help_text="The date the item was ordered.")
     dispatch_date = models.DateField(blank=True, null=True, help_text="The date the item was dispatched.")
 
     def __str__(self):
