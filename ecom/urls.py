@@ -15,6 +15,7 @@ urlpatterns = [
     # Admin Authentication
     path("admins/register/", views.register_admin, name="register_admin"),
     path("admins/login/", views.login_admin, name="login_admin"),
+    path("admins/orders/", views.order, name="order"),
 
     # Logout
     path("logout/", views.logout, name="logout"),
@@ -32,7 +33,8 @@ urlpatterns = [
 
     # Admin Dashboard
     path("admins/dashboard/", views.admin_dashboard, name="admin_dashboard"),
-    path("admins/tablesadta/", views.table_data, name="table_data"),
+    path("admins/tablesdata/", views.table_data, name="table_data"),
+    path("admins/tablesgeneral/", views.general_data, name="general_data"),
 
     # Product Management
     path("shop/", views.shop_view, name="shop_view"),

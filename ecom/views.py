@@ -103,7 +103,29 @@ def register_seller(request):
 @never_cache_custom
 @user
 def register_admin(request):
-    return register_user(request, UserRole.ADMIN, "admins/register.html", "login_admin")
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        password = request.POST.get("password")
+        gender = request.POST.get("gender")
+
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "This email is already registered.")
+            return redirect("register_admin")
+
+        admin_user = User.objects.create(
+            name=name,
+            email=email,
+            phone=phone,
+            password=make_password(password),
+            gender=gender,
+            role=UserRole.ADMIN  
+        )
+        messages.success(request, "Admin registered successfully. Please login.")
+        return redirect("login_admin")
+
+    return render(request, "admins/register.html")
 
 # Helper function for user login
 def handle_login(request, role, template, redirect_url):
@@ -142,6 +164,8 @@ def login_admin(request):
     return handle_login(request, UserRole.ADMIN, "admins/login.html", "admin_dashboard")
 
 # Logout view
+from django.shortcuts import redirect
+
 def logout(request):
     user_role = request.session.pop("user_role", None)
     request.session.flush()
@@ -150,8 +174,11 @@ def logout(request):
         return redirect("home_view")
     elif user_role == UserRole.SELLER_OWNER:
         return redirect("login_seller")
-    else:
+    elif user_role == UserRole.ADMIN:
         return redirect("login_admin")
+
+    return redirect("home_view")
+
 
 def home_view(request):
     user_role = request.session.get("user_role")
@@ -708,9 +735,21 @@ def generate_invoice(request, order_id):
 
 def table_data(request):
     users = User.objects.exclude(role="ROLE_ADMIN")
-    products = Product.objects.all()
     context = {
         "users": users,
-        "products": products,
     }
     return render(request, "admins/tables-data.html", context)
+
+def general_data(request):
+    products = Product.objects.all()
+    context = {
+        "products": products,
+    }
+    return render(request, "admins/tables-general.html", context)
+
+def order(request):
+    orders = Order.objects.all()
+    context = {
+        "orders" : orders,
+    }
+    return render(request, "admins/orders.html", context)
