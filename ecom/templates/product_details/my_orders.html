@@ -202,13 +202,15 @@
 						<span class="badge bg-primary">Shipped</span>
 						{% elif order.status == "Completed" %}
 						<span class="badge bg-success">Completed</span>
+						{% elif order.status == "Cancelled" %}
+						<span class="badge bg-danger">Cancelled</span>
 						{% else %}
 						<span class="badge bg-secondary">{{ order.status }}</span>
 						{% endif %}
 					</td>
 					<td>{{ order.total_price|floatformat:2 }}</td>
 					<td>
-						<!-- <a href="{% url 'order_success' order.id %}" class="btn btn-primary btn-sm">View Details</a> -->
+						{% if order.status != "Cancelled" %}
 						<form action="{% url 'order_success' order.id %}" method="POST" class="d-inline">
 							{% csrf_token %}
 							<button class="btn btn-primary btn-sm">View Details</button>
@@ -217,10 +219,11 @@
 							{% csrf_token %}
 							<button class="btn btn-danger btn-sm">Cancel</button>
 						</form>
+						{% endif %}
 					</td>
 				</tr>
 				{% endfor %}
-			</tbody>
+			</tbody>			
 		</table>
 		{% else %}
 		<p>You have no orders yet.</p>

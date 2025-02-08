@@ -93,6 +93,7 @@
         }
 
         @media (max-width: 480px) {
+
             table,
             th,
             td {
@@ -125,11 +126,11 @@
         <p>{{ order.billing_address.shipping_state }}, {{ order.billing_address.shipping_pincode }}</p>
         <p>{{ order.billing_address.shipping_country }}</p>
 
-        <h3>Shipping Address:</h3>
-        <p>{{ order.seller.shippingaddress.business_name }}</p>
-        <p>{{ order.seller.shippingaddress.business_address }}, {{ order.seller.shippingaddress.city }}</p>
-        <p>{{ order.seller.shippingaddress.state }}, {{ order.seller.shippingaddress.pincode }}</p>
-        <p>{{ order.seller.shippingaddress.country }}</p>
+        <h3>Shipping Address (Seller):</h3>
+            <p>{{ seller_address.businessname }}</p>
+            <p>{{ seller_address.businessaddress }}, {{ seller_address.city }}</p>
+            <p>{{ seller_address.state }}, {{ seller_address.pincode }}</p>
+            <p>{{ seller_address.country }}</p>
 
         <h3>Order Items:</h3>
         <table>

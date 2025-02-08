@@ -184,7 +184,7 @@
             </li>
             {% endif %}
           </ul><!-- End Profile Dropdown Items -->
-          
+
         </li><!-- End Profile Nav -->
       </ul>
     </nav><!-- End Icons Navigation -->
@@ -214,7 +214,7 @@
             </a>
           </li>
           <li>
-            <a href="{% url 'general_data' %}"1>
+            <a href="{% url 'general_data' %}" 1>
               <i class="bi bi-circle"></i><span>Product Tables</span>
             </a>
           </li>
@@ -267,18 +267,18 @@
       </li><!-- End Contact Page Nav -->
 
       <!-- <li class="nav-item">
-        <a class="nav-link collapsed" href="{% url 'register_admin' %}">
-          <i class="bi bi-card-list"></i>
-          <span>Register</span>
-        </a>
-      </li>End Register Page Nav -->
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="pages-login.html">
-          <i class="bi bi-box-arrow-in-right"></i>
-          <span>Login</span>
-        </a>
-      </li><!-- End Login Page Nav -->
+                <a class="nav-link" href="{% url 'register_admin' %}">
+                    <i class="bi bi-person-plus"></i>
+                    <span>Register Admin</span>
+                </a>
+            </li> 
+            
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="pages-login.html">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    <span>Login</span>
+                </a>
+            </li>End Login Page Nav -->
     </ul>
 
   </aside><!-- End Sidebar-->
@@ -286,12 +286,12 @@
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>General Tables</h1>
+      <h1>Order Tables</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="index.html">Home</a></li>
           <li class="breadcrumb-item">Tables</li>
-          <li class="breadcrumb-item active">General</li>
+          <li class="breadcrumb-item active">Order</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -301,7 +301,7 @@
         <div class="col-12">
           <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Product Table</h5>
+              <h5 class="card-title">Order Table</h5>
 
               <!-- Product Table -->
               <table class="table datatable table-bordered">
@@ -314,34 +314,34 @@
                   </tr>
                 </thead>
                 <tbody>
-                    {% for order in orders %}
-                    {% for item in order.order_items.all %}
-                      <tr>
-                        <td>{{ item.product.product_name }}</td>
-                        <td>
-                          {% if item.product.image %}
-                            <img src="{{ item.product.image.url }}" alt="{{ item.product.product_name }}" class="img-fluid"
-                                 style="max-width: 100px; max-height: 100px;">
-                          {% else %}
-                            <span class="text-muted">No Image Available</span>
-                          {% endif %}
-                        </td>
-                        <td>{{ item.product.description }}</td>
-                        <td>₹{{ item.product.price }}</td>
-                        <td>{{ item.quantity }}</td>
-                        <td>{{ item.status }}</td>
-                      </tr>
-                    {% empty %}
-                      <tr>
-                        <td colspan="6" class="text-center text-muted">No products available</td>
-                      </tr>
-                    {% endfor %}
+                  {% for order in orders %}
+                  {% for item in order.order_items.all %}
+                  <tr>
+                    <td>{{ item.product.product_name }}</td>
+                    <td>
+                      {% if item.product.image %}
+                      <img src="{{ item.product.image.url }}" alt="{{ item.product.product_name }}" class="img-fluid"
+                        style="max-width: 100px; max-height: 100px;">
+                      {% else %}
+                      <span class="text-muted">No Image Available</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ item.product.description }}</td>
+                    <td>₹{{ item.product.price }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.status }}</td>
+                  </tr>
                   {% empty %}
-                    <tr>
-                      <td colspan="6" class="text-center text-muted">No orders available</td>
-                    </tr>
+                  <tr>
+                    <td colspan="6" class="text-center text-muted">No products available</td>
+                  </tr>
                   {% endfor %}
-                  
+                  {% empty %}
+                  <tr>
+                    <td colspan="6" class="text-center text-muted">No orders available</td>
+                  </tr>
+                  {% endfor %}
+
                 </tbody>
               </table>
               <!-- End Product Table -->

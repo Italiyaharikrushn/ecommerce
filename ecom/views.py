@@ -13,6 +13,7 @@ from django.http import HttpResponseForbidden
 from datetime import date, timedelta
 from django.db import transaction
 from django.template.loader import get_template
+from django.db.models import Min
 from xhtml2pdf import pisa
 from io import BytesIO
 from django.http import HttpResponse
@@ -232,7 +233,13 @@ def customer_dashboard(request):
 def admin_dashboard(request):
     if request.session.get("user_role") != UserRole.ADMIN:
         return redirect('customer_dashboard')
-    return render(request, "admins/dashboard.html")
+
+    customer_orders = OrderItem.objects.select_related("product", "order", "order__user")
+
+    context = {
+        "customer_orders": customer_orders
+    }
+    return render(request, "admins/dashboard.html", context)
 
 # Product-related views
 @never_cache_custom
@@ -587,13 +594,14 @@ def view_orders(request):
     except User.DoesNotExist:
         raise PermissionDenied("Seller not found.")
 
+    # Fetch order items for the seller
     order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related("order", "product")
 
     orders_dict = {}
     today = date.today()
     two_days_from_today = today + timedelta(days=2)
 
-    status_counts = {"onhold": 0,"pending": 0,"ready_to_ship": 0,}
+    status_counts = {"onhold": 0, "pending": 0, "ready_to_ship": 0}
 
     for item in order_items:
         order_id = item.order.id
@@ -603,18 +611,33 @@ def view_orders(request):
             status_counts[order_status] += 1
 
         if order_id not in orders_dict:
-            orders_dict[order_id] = {"order": item.order,"items": [],"total_price": 0,}
+            orders_dict[order_id] = {
+                "order": item.order,
+                "items": [],
+                "total_price": 0,
+                "order_date": item.order.order_items.aggregate(Min("order_date"))["order_date__min"],  # Get the earliest order_date
+            }
 
         orders_dict[order_id]["items"].append(item)
         orders_dict[order_id]["total_price"] += item.product.price * item.quantity
 
         if item.dispatch_date:
             if today > item.dispatch_date:
-                messages.error(request,f"Order item '{item.product.product_name}' has breached the dispatch date!",)
+                messages.error(request, f"Order item '{item.product.product_name}' has breached the dispatch date!")
             elif two_days_from_today >= item.dispatch_date:
-                messages.warning(request,f"Order item '{item.product.product_name}' is nearing the dispatch date!",)
+                messages.warning(request, f"Order item '{item.product.product_name}' is nearing the dispatch date!")
 
-    return render(request,"seller/order.html",{"name": seller.name,"orders": orders_dict.values(),"today": today,"two_days_from_today": two_days_from_today,"status_counts": status_counts,},)
+    return render(
+        request,
+        "seller/order.html",
+        {
+            "name": seller.name,
+            "orders": orders_dict.values(),
+            "today": today,
+            "two_days_from_today": two_days_from_today,
+            "status_counts": status_counts,
+        },
+    )
 
 def cancel_order_item(request, item_id):
     if request.method == "POST":
@@ -630,10 +653,11 @@ def cancel_order_item(request, item_id):
 
             order = order_item.order
             order.total_price -= order_item.total_price()
+            order_item.status = "cancelled"
+            order_item.save()
 
-            order_item.delete()
+            remaining_items = order.order_items.exclude(status="cancelled")
 
-            remaining_items = order.order_items.all()
             if remaining_items.exists():
                 statuses = set(item.status for item in remaining_items)
 
@@ -641,10 +665,10 @@ def cancel_order_item(request, item_id):
                     order.status = "Processing"
                 elif statuses == {"pending"}:
                     order.status = "Pending"
-
                 order.save()
             else:
-                order.delete()
+                order.status = "Cancelled"
+                order.save()
 
         except OrderItem.DoesNotExist:
             raise PermissionDenied("Order item not found.")
@@ -690,23 +714,28 @@ def accept_order(request, item_id):
 def generate_invoice(request, order_id):
     try:
         order = Order.objects.get(id=order_id)
-
-        # if order.Product.seller:
-        #     seller_address = ShippingAddress.objects.filter(seller=order.seller).first()
-        # else:
-        #     seller_address = None
         
+        # Derive seller from the first order item (if any)
+        if order.order_items.exists():
+            seller = order.order_items.first().product.seller
+            seller_address = ShippingAddress.objects.filter(seller=seller).first()
+        else:
+            seller_address = None
+        
+        # Create or retrieve the billing address
         if not hasattr(order, 'billing_address') or order.billing_address is None:
             billing_address = BillingAddress.objects.create(
                 user=order.user,
                 order=order,
                 billing_fullname=order.user.name,
+                billing_address="Default Billing Address",
                 billing_city="Default City",
                 billing_state="Default State",
                 billing_pincode="000000",
                 billing_country="Default Country",
                 billing_contact_number="0000000000",
                 shipping_fullname=order.user.name,
+                shipping_address="Default Shipping Address",
                 shipping_city="Default City",
                 shipping_state="Default State",
                 shipping_pincode="000000",
@@ -715,10 +744,13 @@ def generate_invoice(request, order_id):
             )
         else:
             billing_address = order.billing_address
-
+        
         template_path = 'seller/label.html'
-        # context = {'order': order, 'billing_address': billing_address, 'seller_address': seller_address}
-        context = {'order': order, 'billing_address': billing_address}
+        context = {
+            'order': order,
+            'billing_address': billing_address,
+            'seller_address': seller_address
+        }
         
         template = get_template(template_path)
         html = template.render(context)
@@ -753,3 +785,11 @@ def order(request):
         "orders" : orders,
     }
     return render(request, "admins/orders.html", context)
+
+def recent_sales(request):
+    customer_orders = OrderItem.objects.filter(order__user=request.user).select_related("product", "order")
+
+    context = {
+        "customer_orders": customer_orders
+    }
+    return render(request, "recent_sales.html", context)

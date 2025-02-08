@@ -132,7 +132,7 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending')
-    order_date = models.DateField(blank=True, null=True, help_text="The date the item was ordered.")
+    order_date = models.DateField(auto_now_add=True)
     dispatch_date = models.DateField(blank=True, null=True, help_text="The date the item was dispatched.")
 
     def __str__(self):
@@ -188,9 +188,9 @@ class Payment(models.Model):
 
 class ShippingAddress(models.Model):
     seller = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={"role": UserRole.SELLER_OWNER}, null=True, blank=True)
-    BusinessName = models.CharField(max_length=255)
-    BusinessAddress = models.TextField()
-    City = models.CharField(max_length=100)
+    businessname = models.CharField(max_length=255)
+    businessaddress = models.TextField()
+    city = models.CharField(max_length=100)
     state = models.CharField(max_length=100, blank=True, null=True)
     pincode = models.CharField(max_length=6)
     country = models.CharField(max_length=100)
