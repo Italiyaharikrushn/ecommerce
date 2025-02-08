@@ -15,6 +15,7 @@ from django.db import transaction
 from django.template.loader import get_template
 from django.db.models import Min
 from xhtml2pdf import pisa
+from datetime import datetime
 from io import BytesIO
 from django.http import HttpResponse
 
@@ -234,10 +235,16 @@ def admin_dashboard(request):
     if request.session.get("user_role") != UserRole.ADMIN:
         return redirect('customer_dashboard')
 
-    customer_orders = OrderItem.objects.select_related("product", "order", "order__user")
+    today = datetime.today().date()  # Get today's date
+
+    total_orders = Order.objects.count()  # Total orders
+    today_orders = OrderItem.objects.filter(order_date=today).count()  # ✅ Using order_date
+    completed_orders = Order.objects.filter(status="Delivered").count()  # Completed orders
 
     context = {
-        "customer_orders": customer_orders
+        "total_orders": total_orders,
+        "today_orders": today_orders,
+        "completed_orders": completed_orders
     }
     return render(request, "admins/dashboard.html", context)
 
