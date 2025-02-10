@@ -235,11 +235,11 @@ def admin_dashboard(request):
     if request.session.get("user_role") != UserRole.ADMIN:
         return redirect('customer_dashboard')
 
-    today = datetime.today().date()  # Get today's date
+    today = datetime.today().date()
 
-    total_orders = Order.objects.count()  # Total orders
-    today_orders = OrderItem.objects.filter(order_date=today).count()  # ✅ Using order_date
-    completed_orders = Order.objects.filter(status="Delivered").count()  # Completed orders
+    total_orders = Order.objects.count()
+    today_orders = OrderItem.objects.filter(order_date=today).count()
+    completed_orders = Order.objects.filter(status="Delivered").count()
 
     context = {
         "total_orders": total_orders,

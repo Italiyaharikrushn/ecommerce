@@ -129,14 +129,13 @@
                 <li class="nav-item dropdown pe-3">
 
                     <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-                        <img src="{% static 'images/profile-img.jpg' %}" alt="Profile" class="rounded-circle">
-                        <span class="d-none d-md-block dropdown-toggle ps-2">{{ request.session.user_name }}</span>
+                        <span class="d-none d-md-block dropdown-toggle ps-2">{{ request.session.user_name|slice:":1"|upper }}</span>
                     </a><!-- End Profile Iamge Icon -->
 
                     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
                         {% if request.session.user_name %}
                         <li class="dropdown-header">
-                            <h6>{{ request.session.user_name }}</h6>
+                            <h6>{{ request.session.user_name|title }}</h6>
                             <span>{{ request.session.user_role }}</span>
                         </li>
 
@@ -309,8 +308,6 @@
                                     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                                         <li class="dropdown-header text-start"><h6>Filter</h6></li>
                                         <li><a class="dropdown-item" href="#">Today</a></li>
-                                        <li><a class="dropdown-item" href="#">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#">This Year</a></li>
                                     </ul>
                                 </div>
                         
@@ -342,9 +339,7 @@
                                             <h6>Filter</h6>
                                         </li>
 
-                                        <li><a class="dropdown-item" href="#">Today</a></li>
                                         <li><a class="dropdown-item" href="#">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#">This Year</a></li>
                                     </ul>
                                 </div>
 
