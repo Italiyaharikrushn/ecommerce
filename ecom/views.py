@@ -67,20 +67,21 @@ def register_seller(request):
     if request.method == 'POST':
         try:
             with transaction.atomic():
+                
                 user = User.objects.create(
                     name=request.POST['name'],
                     email=request.POST['email'],
                     phone=request.POST['phone'],
                     password=make_password(request.POST['password']),
-                    gender = request.POST.get("gender"),
+                    gender=request.POST.get("gender"),
                     role=UserRole.SELLER_OWNER
                 )
 
                 ShippingAddress.objects.create(
                     seller=user,
-                    BusinessName=request.POST['business_name'],
-                    BusinessAddress=request.POST['business_address'],
-                    City=request.POST['city'],
+                    businessname=request.POST['business_name'],  # Fixed field names
+                    businessaddress=request.POST['business_address'],
+                    city=request.POST['city'],
                     state=request.POST['state'],
                     pincode=request.POST['pincode'],
                     country=request.POST['country']
