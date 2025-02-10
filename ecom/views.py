@@ -237,6 +237,8 @@ def admin_dashboard(request):
 
     today = datetime.today().date()
 
+    customer_orders = OrderItem.objects.filter(order_date=today)
+
     total_orders = Order.objects.count()
     today_orders = OrderItem.objects.filter(order_date=today).count()
     completed_orders = Order.objects.filter(status="Delivered").count()
@@ -244,7 +246,8 @@ def admin_dashboard(request):
     context = {
         "total_orders": total_orders,
         "today_orders": today_orders,
-        "completed_orders": completed_orders
+        "completed_orders": completed_orders,
+        "customer_orders": customer_orders
     }
     return render(request, "admins/dashboard.html", context)
 
