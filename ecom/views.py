@@ -496,6 +496,7 @@ def checkout(request):
                 billing_address.save()
 
                 dispatch_date = date.today() + timedelta(days=2)
+                delivery_date = dispatch_date + timedelta(days=5)  # Corrected tuple issue
 
                 order_items = [
                     OrderItem(
@@ -503,6 +504,7 @@ def checkout(request):
                         product=item.product,
                         quantity=item.quantity,
                         dispatch_date=dispatch_date,
+                        delivery_date=delivery_date,
                     ) for item in cart.cart_items.all()
                 ]
                 OrderItem.objects.bulk_create(order_items)
@@ -522,6 +524,73 @@ def checkout(request):
         "billing_address": billing_address,
         "total_price": cart.total_price(),
     })
+
+# def checkout(request):
+#     user_id = request.session.get("user_id")
+    
+#     if not user_id:
+#         messages.error(request, "You need to be logged in to proceed.")
+#         return redirect("login")
+
+#     cart = Cart.objects.filter(user_id=user_id).first()
+
+#     if not cart or not cart.cart_items.exists():
+#         messages.error(request, "Your cart is empty.")
+#         return redirect("shop_view")
+
+#     billing_address, _ = BillingAddress.objects.get_or_create(user_id=user_id)
+
+#     if request.method == "POST":
+#         billing_fields = [
+#             "billing_fullname", "billing_address", "billing_city", "billing_state",
+#             "billing_pincode", "billing_country", "billing_contact_number",
+#             "shipping_fullname", "shipping_address", "shipping_city", "shipping_state",
+#             "shipping_pincode", "shipping_country", "shipping_contact_number"
+#         ]
+
+#         for field in billing_fields:
+#             setattr(billing_address, field, request.POST.get(field))
+        
+#         billing_address.save()
+
+#         try:
+#             with transaction.atomic():
+#                 order = Order.objects.create(user_id=user_id, total_price=cart.total_price())
+
+#                 billing_address.order = order
+#                 billing_address.save()
+
+#                 dispatch_date = date.today() + timedelta(days=2)
+#                 # Calculate delivery date (e.g., 5 days after dispatch)
+#                 delivery_date=dispatch_date + timedelta(days=5),
+
+#                 order_items = [
+#                     OrderItem(
+#                         order=order,
+#                         product=item.product,
+#                         quantity=item.quantity,
+#                         dispatch_date=dispatch_date,
+#                     ) for item in cart.cart_items.all()
+#                 ]
+#                 OrderItem.objects.bulk_create(order_items)
+
+#                 notify_sellers(order)
+
+#                 cart.cart_items.all().delete()
+
+#                 messages.success(request, "Order placed successfully!")
+#                 return redirect("payment_view", order_id=order.id)
+#         except Exception as e:
+#             messages.error(request, f"An error occurred during checkout: {e}")
+#             return redirect("checkout")
+
+#     return render(request, "product_details/checkout.html", {
+#         "cart": cart,
+#         "billing_address": billing_address,
+#         "total_price": cart.total_price(),
+#     })
+
+
 
 @never_cache_custom
 @user_login_required
