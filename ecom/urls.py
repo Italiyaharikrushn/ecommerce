@@ -21,6 +21,7 @@ urlpatterns = [
     path("logout/", views.logout, name="logout"),
 
     # General Pages
+    path("customer/cancel-order/<int:order_id>/", views.customer_cancel_order, name="customer_cancel_order"),
     path("", views.home_view, name="home_view"),
     path("about/", views.about_view, name="about_view"),
     path("contact/", views.contact, name="contact"),

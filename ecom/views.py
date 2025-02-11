@@ -686,6 +686,25 @@ def cancel_order_item(request, item_id):
 
         return redirect("view_orders")
 
+def customer_cancel_order(request, order_id):
+    if request.method == "POST":
+        user_id = request.session.get("user_id")
+
+        # Check if the order exists and belongs to the logged-in customer
+        order = Order.objects.get(id=order_id, user_id=user_id)
+
+        # Check if the order is already cancelled or completed
+        if order.status in ["Cancelled", "Completed"]:
+            raise PermissionDenied("You cannot cancel this order.")
+
+        # Cancel all order items
+        order.order_items.update(status="cancelled")
+
+        # Update order status to Cancelled
+        order.status = "Cancelled"
+        order.save()
+
+        return redirect("my_orders")
 def accept_order(request, item_id):
     if request.method == "POST":
         user_id = request.session.get("user_id")
