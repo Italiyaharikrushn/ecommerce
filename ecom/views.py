@@ -1,25 +1,21 @@
 from django.shortcuts import render, redirect
-from .models import (Product, User, Contact, About, CartItem, Cart, Order, OrderItem, BillingAddress, Payment, UserRole, ShippingAddress, BankDetails )
-from django.contrib.auth.hashers import make_password, check_password
-from .utils import never_cache_custom, user, user_login_required
-from django.http import JsonResponse, HttpResponseNotAllowed
-import json
-from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
-from django.db.models import F
-from django.core.mail import send_mail
+from .models import ( Product, User, Contact, About, CartItem, Cart, Order, OrderItem, BillingAddress, Payment, UserRole, ShippingAddress, BankDetails)
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden, HttpResponseNotAllowed
 from django.contrib import messages
-from django.urls import reverse
-from django.http import HttpResponseForbidden
-from datetime import date, timedelta
-from django.db import transaction
+from django.core.mail import send_mail
 from django.template.loader import get_template
-from django.db.models import Min
+from django.urls import reverse
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from django.db.models import F, Min
+from django.db import transaction
+from django.contrib.auth.hashers import make_password, check_password
 from xhtml2pdf import pisa
-from datetime import datetime
 from io import BytesIO
-from django.http import HttpResponse
+import json
+from datetime import datetime, date, timedelta
 
-# Notify sellers about new order
+from .utils import never_cache_custom, user, user_login_required
+
 def notify_sellers(order):
     seller_orders = {}
     for item in order.order_items.all():
@@ -35,7 +31,6 @@ def notify_sellers(order):
         email_body = f"Dear {seller.name},\n\nYou have a new order. Here are the details:\n\n{product_details}\n\nThank you."
         send_mail(subject=email_subject,message=email_body,from_email="no-reply@example.com",recipient_list=[seller.email],)
 
-# Helper function to handle user registration
 def register_user(request, role, template, redirect_url):
     if request.method == "POST":
         name = request.POST.get("name")
@@ -55,7 +50,6 @@ def register_user(request, role, template, redirect_url):
 
     return render(request, template)
 
-# Views for user roles (Customer, Seller, Admin)
 @never_cache_custom
 @user
 def register_customer(request):
@@ -79,7 +73,7 @@ def register_seller(request):
 
                 ShippingAddress.objects.create(
                     seller=user,
-                    businessname=request.POST['business_name'],  # Fixed field names
+                    businessname=request.POST['business_name'],
                     businessaddress=request.POST['business_address'],
                     city=request.POST['city'],
                     state=request.POST['state'],
@@ -130,7 +124,6 @@ def register_admin(request):
 
     return render(request, "admins/register.html")
 
-# Helper function for user login
 def handle_login(request, role, template, redirect_url):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -150,7 +143,6 @@ def handle_login(request, role, template, redirect_url):
 
     return render(request, template)
 
-# Login views for different roles
 @never_cache_custom
 @user
 def login_customer(request):
@@ -166,9 +158,6 @@ def login_seller(request):
 def login_admin(request):
     return handle_login(request, UserRole.ADMIN, "admins/login.html", "admin_dashboard")
 
-# Logout view
-from django.shortcuts import redirect
-
 def logout(request):
     user_role = request.session.pop("user_role", None)
     request.session.flush()
@@ -182,7 +171,6 @@ def logout(request):
 
     return redirect("home_view")
 
-
 def home_view(request):
     user_role = request.session.get("user_role")
 
@@ -195,7 +183,6 @@ def home_view(request):
         return redirect("admin_dashboard")
     return redirect("login")
 
-# Dashboard views
 @never_cache_custom
 def seller_dashboard(request):
     if request.session.get("user_role") != UserRole.SELLER_OWNER:
@@ -252,7 +239,6 @@ def admin_dashboard(request):
     }
     return render(request, "admins/dashboard.html", context)
 
-# Product-related views
 @never_cache_custom
 @user_login_required
 def add_product(request):
@@ -388,13 +374,11 @@ def update_product(request, product_id):
 
     return render(request, "seller/update_product.html", {"product": product, "name": name})
 
-# Shop view
 @never_cache_custom
 def shop_view(request):
     products = Product.objects.all()
     return render(request, "product_details/shop.html", {"products": products})
 
-# Contact page view
 @never_cache_custom
 def contact(request):
     if request.method == "POST":
@@ -410,13 +394,11 @@ def contact(request):
 
     return render(request, "product_details/contact.html")
 
-# About page view
 @never_cache_custom
 def about_view(request):
     about = About.objects.first()
     return render(request, "product_details/about.html", {"about": about})
 
-# Cart-related views
 @never_cache_custom
 @user_login_required
 def get_cart(request):
@@ -431,7 +413,6 @@ def get_cart(request):
 
     return render(request,"product_details/cart.html",{"cart": cart,"cart_items": cart_items,"total_price": total_price,},)
 
-# Add to cart view
 @never_cache_custom
 @user_login_required
 def add_to_cart(request):
@@ -449,7 +430,6 @@ def add_to_cart(request):
 
     return redirect("shop_view")
 
-# Update cart view
 @never_cache_custom
 @user_login_required
 def update_cart(request):
@@ -470,7 +450,6 @@ def update_cart(request):
 
     return HttpResponseNotAllowed(["POST"])
 
-# Remove from cart view
 @never_cache_custom
 @user_login_required
 def remove_cart(request):
@@ -479,7 +458,6 @@ def remove_cart(request):
         CartItem.objects.filter(id=item_id).delete()
     return redirect("cart_view")
 
-# Checkout view
 @never_cache_custom
 @user_login_required
 def checkout(request):
@@ -545,7 +523,6 @@ def checkout(request):
         "total_price": cart.total_price(),
     })
 
-# Payment view
 @never_cache_custom
 @user_login_required
 def payment_view(request, order_id):
@@ -566,7 +543,6 @@ def payment_view(request, order_id):
 
     return render(request, "product_details/payment.html", {"order": order})
 
-# Order success view
 def order_success(request, order_id):
     try:
         order = Order.objects.prefetch_related("order_items__product__seller").get(id=order_id)
@@ -605,7 +581,6 @@ def view_orders(request):
     except User.DoesNotExist:
         raise PermissionDenied("Seller not found.")
 
-    # Fetch order items for the seller
     order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related("order", "product")
 
     orders_dict = {}
@@ -690,21 +665,18 @@ def customer_cancel_order(request, order_id):
     if request.method == "POST":
         user_id = request.session.get("user_id")
 
-        # Check if the order exists and belongs to the logged-in customer
         order = Order.objects.get(id=order_id, user_id=user_id)
 
-        # Check if the order is already cancelled or completed
         if order.status in ["Cancelled", "Completed"]:
             raise PermissionDenied("You cannot cancel this order.")
 
-        # Cancel all order items
         order.order_items.update(status="cancelled")
 
-        # Update order status to Cancelled
         order.status = "Cancelled"
         order.save()
 
         return redirect("my_orders")
+
 def accept_order(request, item_id):
     if request.method == "POST":
         user_id = request.session.get("user_id")
@@ -745,14 +717,12 @@ def generate_invoice(request, order_id):
     try:
         order = Order.objects.get(id=order_id)
         
-        # Derive seller from the first order item (if any)
         if order.order_items.exists():
             seller = order.order_items.first().product.seller
             seller_address = ShippingAddress.objects.filter(seller=seller).first()
         else:
             seller_address = None
         
-        # Create or retrieve the billing address
         if not hasattr(order, 'billing_address') or order.billing_address is None:
             billing_address = BillingAddress.objects.create(
                 user=order.user,

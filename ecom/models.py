@@ -134,6 +134,7 @@ class OrderItem(models.Model):
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending')
     order_date = models.DateField(auto_now_add=True)
     dispatch_date = models.DateField(blank=True, null=True, help_text="The date the item was dispatched.")
+    delivery_date = models.DateField(blank=True, null=True, help_text="The estimated delivery date.")
 
     def __str__(self):
         return f"{self.quantity} x {self.product.product_name} (Order #{self.order.id})"
