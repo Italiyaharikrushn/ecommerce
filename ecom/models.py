@@ -142,7 +142,7 @@ class OrderItem(models.Model):
         return self.quantity * self.product.price
 
 class BillingAddress(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="billing_addresses")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="billing_addresses", unique=True)
     order = models.OneToOneField("Order", on_delete=models.SET_NULL, related_name="billing_address", null=True, blank=True)
 
     # Billing Address
