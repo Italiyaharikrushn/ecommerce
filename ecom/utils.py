@@ -1,5 +1,7 @@
 from functools import wraps
 from django.shortcuts import redirect
+from .models import User
+from django.contrib import messages
 
 def never_cache_custom(view_func):
     @wraps(view_func)
@@ -25,3 +27,14 @@ def user(view_func):
             return redirect('home_view')
         return view_func(request, *args, **kwargs)
     return _wrapped_view
+
+def check_user_exists(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if request.method == "POST":
+            email = request.POST.get("email")
+            if email and not User.objects.filter(email=email).exists():
+                messages.error(request, "No account found with this email. Please register.")
+                return redirect(request.path)
+        return view_func(request, *args, **kwargs)
+    return wrapper

@@ -14,7 +14,7 @@ from io import BytesIO
 import json
 from datetime import datetime, date, timedelta
 
-from .utils import never_cache_custom, user, user_login_required
+from .utils import never_cache_custom, user, user_login_required, check_user_exists
 
 def notify_sellers(order):
     seller_orders = {}
@@ -145,16 +145,19 @@ def handle_login(request, role, template, redirect_url):
 
 @never_cache_custom
 @user
+@check_user_exists
 def login_customer(request):
     return handle_login(request, UserRole.CUSTOMER, "product_details/login.html", "home_view")
 
 @never_cache_custom
 @user
+@check_user_exists
 def login_seller(request):
     return handle_login(request, UserRole.SELLER_OWNER, "seller/login.html", "seller_dashboard")
 
 @never_cache_custom
 @user
+@check_user_exists
 def login_admin(request):
     return handle_login(request, UserRole.ADMIN, "admins/login.html", "admin_dashboard")
 
@@ -171,6 +174,7 @@ def logout(request):
 
     return redirect("home_view")
 
+@never_cache_custom
 def home_view(request):
     user_role = request.session.get("user_role")
 
@@ -181,7 +185,7 @@ def home_view(request):
         return render(request, "product_details/index.html", {"products": products})
     elif user_role == UserRole.ADMIN:
         return redirect("admin_dashboard")
-    return redirect("login")
+    return render(request, "product_details/index.html")
 
 @never_cache_custom
 def seller_dashboard(request):
