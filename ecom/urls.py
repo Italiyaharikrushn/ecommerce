@@ -31,6 +31,8 @@ urlpatterns = [
     path("seller/add-product/", views.add_product, name="add_product"),
     path("seller/product-list/", views.product_list, name="product_list"),
     path("seller/orders/", views.view_orders, name="view_orders"),
+    path('product/<int:product_id>/', views.product_detail, name='product_detail'),
+    # path('cust/product/<int:product_id>', views.products_details, name='products_details'),
 
     # Admin Dashboard
     path("admins/dashboard/", views.admin_dashboard, name="admin_dashboard"),

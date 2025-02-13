@@ -250,11 +250,10 @@ def add_product(request):
         return redirect("login_seller")
 
     user_id = request.session.get("user_id")
-    seller = User.objects.get(id=user_id, role=UserRole.SELLER_OWNER)
 
     try:
-        user = User.objects.get(id=user_id)
-        name = user.name
+        seller = User.objects.get(id=user_id, role=UserRole.SELLER_OWNER)
+        name = seller.name
     except User.DoesNotExist:
         raise PermissionDenied("User not found.")
 
@@ -262,31 +261,57 @@ def add_product(request):
         product_name = request.POST.get("product_name", "").strip()
         description = request.POST.get("description", "").strip()
         price = request.POST.get("price", "").strip()
+        total_quantity = request.POST.get("total_quantity", "").strip()
         image = request.FILES.get("image")
 
-        if not all([product_name, description, price, image]):
-            return render(request,"seller/add_product.html",{"error": "All fields are required."},)
+        if not all([product_name, description, price, total_quantity, image]):
+            return render(request, "seller/add_product.html", {
+                "error": "All fields are required.",
+                "name": name
+            })
 
         try:
             price = float(price)
+            total_quantity = int(total_quantity)
+
             if price < 0:
                 raise ValueError("Price must be positive.")
+            if total_quantity < 0:
+                raise ValueError("Total quantity must be positive.")
 
-            seller = User.objects.get(id=user_id, role=UserRole.SELLER_OWNER)
-
-            Product.objects.create(product_name=product_name,description=description,price=price,image=image,seller=seller,)
+            Product.objects.create(
+                product_name=product_name,
+                description=description,
+                price=price,
+                total_quantity=total_quantity,
+                image=image,
+                seller=seller,
+            )
             return redirect("product_list")
 
-        except ValueError:
-            return render(request,"seller/add_product.html",{"error": "Price must be a valid positive number.", "name": name},)
+        except ValueError as e:
+            return render(request, "seller/add_product.html", {
+                "error": str(e),
+                "name": name
+            })
 
         except ObjectDoesNotExist:
-            return render(request,"seller/add_product.html",{"error": "Seller account not found or unauthorized.", "name": name},)
+            return render(request, "seller/add_product.html", {
+                "error": "Seller account not found or unauthorized.",
+                "name": name
+            })
 
         except Exception as e:
-            return render(request,"seller/add_product.html",{"error": f"An unexpected error occurred: {e}", "name": name},)
+            return render(request, "seller/add_product.html", {
+                "error": f"An unexpected error occurred: {e}",
+                "name": name
+            })
 
     return render(request, "seller/add_product.html", {"name": name})
+
+def product_detail(request, product_id):
+    product = Product.objects.get(id=product_id)
+    return render(request, 'seller/product_detail.html', {'product': product})
 
 @never_cache_custom
 @user_login_required
@@ -593,8 +618,6 @@ def checkout(request):
 #         "billing_address": billing_address,
 #         "total_price": cart.total_price(),
 #     })
-
-
 
 @never_cache_custom
 @user_login_required

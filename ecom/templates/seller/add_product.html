@@ -323,6 +323,9 @@
             <main class="col-md-9 col-lg-10">
                 <div class="container">
                     <h1>Add a New Product</h1>
+                    {% if error %}
+                        <p style="color: red;">{{ error }}</p>
+                    {% endif %}
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="form-group">
@@ -335,17 +338,20 @@
                         </div>
                         <div class="form-group">
                             <label for="id_price">Price:</label>
-                            <input type="number" id="id_price" name="price" step="10" min="0" required>
+                            <input type="number" id="id_price" name="price" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_total_quantity">Total Quantity:</label>
+                            <input type="number" id="id_total_quantity" name="total_quantity" min="0" required>
                         </div>
                         <div class="form-group">
                             <label for="id_image">Image:</label>
-                            <input type="file" id="id_image" name="image">
+                            <input type="file" id="id_image" name="image" required>
                         </div>
                         <button type="submit">Add Product</button>
                     </form>
-
                 </div>
-            </main>
+            </main>            
         </div>
     </div>
 
