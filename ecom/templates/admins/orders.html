@@ -309,6 +309,8 @@
                     <th>Image</th>
                     <th>Description</th>
                     <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -327,7 +329,16 @@
                     <td>{{ item.product.description }}</td>
                     <td>₹{{ item.product.price }}</td>
                     <td>{{ item.quantity }}</td>
-                    <td>{{ item.status }}</td>
+                    <td>
+                      {% if item.status == "ready_to_ship" %}
+                          <form action="{% url 'mark_as_shipped' item.id %}" method="POST" class="d-inline">
+                              {% csrf_token %}
+                              <button class="btn btn-success btn-sm">Shipped</button>
+                          </form>
+                      {% else %}
+                          <span class="badge bg-secondary">{{ item.status }}</span>
+                      {% endif %}
+                  </td>
                   </tr>
                   {% empty %}
                   <tr>

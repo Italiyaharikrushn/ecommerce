@@ -666,49 +666,66 @@ def my_orders_view(request):
         raise PermissionDenied("You do not have permission to view this page.")
 
 def view_orders(request):
+    # Fetch user session details
     user_id = request.session.get("user_id")
     user_role = request.session.get("user_role")
 
+    # Only allow Seller Owners
     if user_role != UserRole.SELLER_OWNER:
         return redirect("login_seller")
 
+    # Fetch seller details
     try:
         seller = User.objects.get(id=user_id, role=UserRole.SELLER_OWNER)
     except User.DoesNotExist:
         raise PermissionDenied("Seller not found.")
 
+    # Fetch all order items related to the seller's products
     order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related("order", "product")
 
+    # Initialize order storage
     orders_dict = {}
+
+    # Define order status counts
+    status_counts = {"onhold": 0, "pending": 0, "ready_to_ship": 0, "shipped": 0}
+
+    # Date variables
     today = date.today()
     two_days_from_today = today + timedelta(days=2)
 
-    status_counts = {"onhold": 0, "pending": 0, "ready_to_ship": 0}
-
+    # Iterate through order items
     for item in order_items:
         order_id = item.order.id
         order_status = item.status.lower()
 
+        # Update status counts
         if order_status in status_counts:
             status_counts[order_status] += 1
 
+        # Store order details
         if order_id not in orders_dict:
             orders_dict[order_id] = {
                 "order": item.order,
                 "items": [],
                 "total_price": 0,
-                "order_date": item.order.order_items.aggregate(Min("order_date"))["order_date__min"],  # Get the earliest order_date
+                "order_date": None,  # Initialize order_date
             }
 
         orders_dict[order_id]["items"].append(item)
         orders_dict[order_id]["total_price"] += item.product.price * item.quantity
 
+        # Fetch the earliest order date from OrderItem (assuming it has `order_date`)
+        earliest_order_date = OrderItem.objects.filter(order_id=order_id).aggregate(Min("order_date"))["order_date__min"]
+        orders_dict[order_id]["order_date"] = earliest_order_date
+
+        # Check dispatch date warnings
         if item.dispatch_date:
             if today > item.dispatch_date:
                 messages.error(request, f"Order item '{item.product.product_name}' has breached the dispatch date!")
             elif two_days_from_today >= item.dispatch_date:
                 messages.warning(request, f"Order item '{item.product.product_name}' is nearing the dispatch date!")
 
+    # Render the seller order page
     return render(
         request,
         "seller/order.html",
@@ -720,6 +737,18 @@ def view_orders(request):
             "status_counts": status_counts,
         },
     )
+
+def mark_as_shipped(request, item_id):
+    order_item = OrderItem.objects.get(id=item_id)
+
+    if order_item.status == "ready_to_ship":
+        order_item.status = "shipped"
+        order_item.save()
+        messages.success(request, f"Order item '{order_item.product.product_name}' has been marked as shipped.")
+    else:
+        messages.warning(request, "This order item cannot be shipped.")
+
+    return redirect("view_orders")
 
 def cancel_order_item(request, item_id):
     if request.method == "POST":

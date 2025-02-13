@@ -366,25 +366,29 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        {% if item.status != "cancelled" %}
-                                            {% if item.status == "ready_to_ship" %}
-                                                {% if order_data.order.id %}
-                                                    <form action="{% url 'invoice_view' order_data.order.id %}" method="GET" class="d-inline">
-                                                        <button class="btn btn-primary btn-sm">Download Invoice</button>
-                                                    </form>
-                                                {% else %}
-                                                    <p class="text-danger">Error: Order ID not found</p>
-                                                {% endif %}              
+                                        {% if item.status == "ready_to_ship" %}
+                                            {% if order_data.order.id %}
+                                                <form action="{% url 'invoice_view' order_data.order.id %}" method="GET" class="d-inline">
+                                                    <button class="btn btn-primary btn-sm">Download Invoice</button>
+                                                </form>
+                                                <form action="{% url 'ship_order' item.id %}" method="POST" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button class="btn btn-success btn-sm">Mark as Shipped</button>
+                                                </form>
                                             {% else %}
-                                                <form action="{% url 'accept_order' item.id %}" method="POST" class="d-inline">
-                                                    {% csrf_token %}
-                                                    <button class="btn btn-primary btn-sm">Accept</button>
-                                                </form>
-                                                <form action="{% url 'cancel_order_item' item.id %}" method="POST" class="d-inline">
-                                                    {% csrf_token %}
-                                                    <button class="btn btn-danger btn-sm">Cancel</button>
-                                                </form>
+                                                <p class="text-danger">Error: Order ID not found</p>
                                             {% endif %}
+                                        {% elif item.status != "cancelled" and item.status != "shipped" %}
+                                            <form action="{% url 'accept_order' item.id %}" method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <button class="btn btn-primary btn-sm">Accept</button>
+                                            </form>
+                                            <form action="{% url 'cancel_order_item' item.id %}" method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <button class="btn btn-danger btn-sm">Cancel</button>
+                                            </form>
+                                        {% else %}
+                                            <span class="badge bg-secondary">No Actions Available</span>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -396,6 +400,7 @@
                     <p class="text-muted text-center">No orders found.</p>
                     {% endif %}
                 </div>
+
             </main>
         </div>
     </div>
