@@ -12,16 +12,18 @@ urlpatterns = [
     path("seller/register/", views.register_seller, name="register_seller"),
     path("seller/login/", views.login_seller, name="login_seller"),
 
-    # Admin Authentication
+    # Admin Authentication & Management
     path("admins/register/", views.register_admin, name="register_admin"),
     path("admins/login/", views.login_admin, name="login_admin"),
+    path("admins/dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("admins/orders/", views.order, name="order"),
+    path("admins/tablesdata/", views.table_data, name="table_data"),
+    path("admins/tablesgeneral/", views.general_data, name="general_data"),
 
     # Logout
     path("logout/", views.logout, name="logout"),
 
     # General Pages
-    path("customer/cancel-order/<int:order_id>/", views.customer_cancel_order, name="customer_cancel_order"),
     path("", views.home_view, name="home_view"),
     path("about/", views.about_view, name="about_view"),
     path("contact/", views.contact, name="contact"),
@@ -31,19 +33,19 @@ urlpatterns = [
     path("seller/add-product/", views.add_product, name="add_product"),
     path("seller/product-list/", views.product_list, name="product_list"),
     path("seller/orders/", views.view_orders, name="view_orders"),
-    path('product/<int:product_id>/', views.product_detail, name='product_detail'),
-    path("order/shipped/<int:item_id>/", views.mark_as_shipped, name="mark_as_shipped"),
-    # path('cust/product/<int:product_id>', views.products_details, name='products_details'),
-
-    # Admin Dashboard
-    path("admins/dashboard/", views.admin_dashboard, name="admin_dashboard"),
-    path("admins/tablesdata/", views.table_data, name="table_data"),
-    path("admins/tablesgeneral/", views.general_data, name="general_data"),
-
-    # Product Management
-    path("shop/", views.shop_view, name="shop_view"),
+    
+    # Product Details & Management
+    path("product/<int:product_id>/", views.product_detail, name="product_detail"),
     path("delete_product/<int:product_id>/", views.delete_product, name="delete_product"),
     path("update_product/<int:product_id>/", views.update_product, name="update_product"),
+    path("shop/", views.shop_view, name="shop_view"),
+
+    # Order Management (Seller & Customer)
+    path("order/shipped/<int:item_id>/", views.mark_as_shipped, name="mark_as_shipped"),
+    path("orders/cancel/<int:item_id>/", views.cancel_order_item, name="cancel_order_item"),
+    path("order-success/<int:order_id>/", views.order_success, name="order_success"),
+    path("orders/accept/<int:item_id>/", views.accept_order, name="accept_order"),
+    path("customer/cancel-order/<int:order_id>/", views.customer_cancel_order, name="customer_cancel_order"),
 
     # Cart Management
     path("cart/", views.get_cart, name="cart_view"),
@@ -57,11 +59,6 @@ urlpatterns = [
 
     # Payment
     path("payment/<int:order_id>/", views.payment_view, name="payment_view"),
-
-    # Order Management
-    path("orders/cancel/<int:item_id>/", views.cancel_order_item, name="cancel_order_item"),
-    path("order-success/<int:order_id>/", views.order_success, name="order_success"),
-    path("orders/accept/<int:item_id>/", views.accept_order, name="accept_order"),
 
     # Invoice
     path("invoice/<int:order_id>/", views.generate_invoice, name="invoice_view"),
