@@ -13,6 +13,7 @@ from xhtml2pdf import pisa
 from io import BytesIO
 import json
 from datetime import datetime, date, timedelta
+from django.db.models import Prefetch, Q
 
 from .utils import never_cache_custom, user, user_login_required, check_user_exists
 
@@ -659,73 +660,104 @@ def my_orders_view(request):
     name = user.name
 
     if user_role == UserRole.CUSTOMER:
-        orders = Order.objects.filter(user=user)
-        return render(request, "product_details/my_orders.html", {"orders": orders, "name": name})
+        orders = Order.objects.filter(user=user).prefetch_related(
+            Prefetch("order_items", queryset=OrderItem.objects.filter(~Q(status="Canceled")).select_related("product__seller"))
+        )
+
+        seller_orders = {}
+
+        for order in orders:
+            seller_items = {}
+            for item in order.order_items.all():
+                seller = item.product.seller
+
+                if seller not in seller_orders:
+                    seller_orders[seller] = []
+
+                if order.id not in seller_items:
+                    seller_items[order.id] = {
+                        "order": order,
+                        "items": [],
+                        "total_price": 0,
+                    }
+
+                seller_items[order.id]["items"].append(item)
+                seller_items[order.id]["total_price"] += item.product.price * item.quantity
+
+            if seller_items:
+                seller_orders[seller].extend(seller_items.values())
+
+        return render(request, "product_details/my_orders.html", {"seller_orders": seller_orders, "name": name})
+
+    elif user_role == UserRole.SELLER:
+        orders = OrderItem.objects.filter(product__seller=user).exclude(status="Canceled").select_related("order", "product")
+
+        seller_orders = {}
+        for item in orders:
+            order_id = item.order.id
+            if order_id not in seller_orders:
+                seller_orders[order_id] = {
+                    "order": item.order,
+                    "items": [],
+                    "total_price": 0,
+                }
+
+            seller_orders[order_id]["items"].append(item)
+            seller_orders[order_id]["total_price"] += item.product.price * item.quantity
+
+        return render(request, "product_details/seller_orders.html", {"orders": seller_orders.values(), "name": name})
 
     else:
         raise PermissionDenied("You do not have permission to view this page.")
 
 def view_orders(request):
-    # Fetch user session details
     user_id = request.session.get("user_id")
     user_role = request.session.get("user_role")
 
-    # Only allow Seller Owners
     if user_role != UserRole.SELLER_OWNER:
         return redirect("login_seller")
 
-    # Fetch seller details
     try:
         seller = User.objects.get(id=user_id, role=UserRole.SELLER_OWNER)
     except User.DoesNotExist:
         raise PermissionDenied("Seller not found.")
 
-    # Fetch all order items related to the seller's products
     order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related("order", "product")
 
-    # Initialize order storage
     orders_dict = {}
 
-    # Define order status counts
     status_counts = {"onhold": 0, "pending": 0, "ready_to_ship": 0, "shipped": 0}
 
-    # Date variables
     today = date.today()
     two_days_from_today = today + timedelta(days=2)
 
-    # Iterate through order items
     for item in order_items:
         order_id = item.order.id
         order_status = item.status.lower()
 
-        # Update status counts
         if order_status in status_counts:
             status_counts[order_status] += 1
 
-        # Store order details
         if order_id not in orders_dict:
             orders_dict[order_id] = {
                 "order": item.order,
                 "items": [],
                 "total_price": 0,
-                "order_date": None,  # Initialize order_date
+                "order_date": None,
             }
 
         orders_dict[order_id]["items"].append(item)
         orders_dict[order_id]["total_price"] += item.product.price * item.quantity
 
-        # Fetch the earliest order date from OrderItem (assuming it has `order_date`)
         earliest_order_date = OrderItem.objects.filter(order_id=order_id).aggregate(Min("order_date"))["order_date__min"]
         orders_dict[order_id]["order_date"] = earliest_order_date
 
-        # Check dispatch date warnings
         if item.dispatch_date:
             if today > item.dispatch_date:
                 messages.error(request, f"Order item '{item.product.product_name}' has breached the dispatch date!")
             elif two_days_from_today >= item.dispatch_date:
                 messages.warning(request, f"Order item '{item.product.product_name}' is nearing the dispatch date!")
 
-    # Render the seller order page
     return render(
         request,
         "seller/order.html",
@@ -751,19 +783,35 @@ def mark_as_shipped(request, item_id):
     return redirect("view_orders")
 
 def cancel_order_item(request, item_id):
-    if request.method == "POST":
-        user_id = request.session.get("user_id")
-        if request.session.get("user_role") != UserRole.SELLER_OWNER:
-            return redirect("login_seller")
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect("view_orders")
 
-        try:
-            order_item = OrderItem.objects.get(id=item_id)
+    user_id = request.session.get("user_id")
+    user_role = request.session.get("user_role")
 
-            if order_item.product.seller.id != user_id:
-                raise PermissionDenied("You are not authorized to cancel this order item.")
+    order_item = OrderItem.objects.get(id=item_id)
+    order = order_item.order
 
-            order = order_item.order
+    if user_role == UserRole.CUSTOMER:
+        if order.user.id != user_id:
+            raise PermissionDenied("You are not authorized to cancel this order.")
+    
+    elif user_role == UserRole.SELLER_OWNER:
+        if order_item.product.seller.id != user_id:
+            raise PermissionDenied("You are not authorized to cancel this order item.")
+
+    elif user_role == UserRole.ADMIN:
+        pass
+
+    else:
+        raise PermissionDenied("You do not have permission to cancel orders.")
+
+    try:
+        with transaction.atomic():
             order.total_price -= order_item.total_price()
+            order.total_price = max(order.total_price, 0)
+
             order_item.status = "cancelled"
             order_item.save()
 
@@ -776,15 +824,19 @@ def cancel_order_item(request, item_id):
                     order.status = "Processing"
                 elif statuses == {"pending"}:
                     order.status = "Pending"
-                order.save()
+                else:
+                    order.status = "Partially Processed"
             else:
                 order.status = "Cancelled"
-                order.save()
 
-        except OrderItem.DoesNotExist:
-            raise PermissionDenied("Order item not found.")
+            order.save()
 
-        return redirect("view_orders")
+            messages.success(request, f"Order item '{order_item.product.product_name}' has been cancelled.")
+
+    except Exception as e:
+        messages.error(request, f"An error occurred while cancelling the order item: {str(e)}")
+
+    return redirect("view_orders")
 
 def customer_cancel_order(request, order_id):
     if request.method == "POST":

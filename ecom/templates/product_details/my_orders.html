@@ -176,65 +176,59 @@
 
 	<!-- Start Cart Section -->
 	<section class="container cart-section">
-		<h2 class="cart-heading">My Orders</h2>
+		<!-- <h2 class="cart-heading">My Orders</h2> -->
 
-		{% if orders %}
-		<table class="cart-table table table-striped">
-			<thead>
-				<tr>
-					<th>Order ID</th>
-					<th>Status</th>
-					<th>Total Price</th>
-					<th>Action</th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for order in orders %}
-				<tr>
-					<td>{{ order.id }}</td>
-					<td>
-						{% if order.status == "Pending" %}
-						<span class="badge bg-warning">Pending</span>
-						{% elif order.status == "Processing" %}
-						<span class="badge bg-info">Processing</span>
-						{% elif order.status == "Shipped" %}
-						<span class="badge bg-primary">Shipped</span>
-						{% elif order.status == "Completed" %}
-						<span class="badge bg-success">Completed</span>
-						{% elif order.status == "Cancelled" %}
-						<span class="badge bg-danger">Cancelled</span>
-						{% else %}
-						<span class="badge bg-secondary">{{ order.status }}</span>
-						{% endif %}
-					</td>
-					<td>{{ order.total_price|floatformat:2 }}</td>
-					<td>
-						{% if order.status != "Cancelled" %}
-						<!-- View Details Button -->
-						<!-- {% if order.product %}
-							<form action="{% url 'products_details' order.product.id %}" method="POST" class="d-inline">
+		<!-- <h2>My Orders (Customer)</h2> -->
+		<p>Welcome, {{ name }}!</p>
+
+		{% for seller, orders in seller_orders.items %}
+		<div class="seller-section">
+			{% for order_group in orders %}
+			<table class="table table-bordered table-striped">
+				<thead class="table-dark">
+					<tr>
+						<th>Product</th>
+						<th>Quantity</th>
+						<th>Price</th>
+						<th>Status</th>
+						<th>Action</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for item in order_group.items %}
+					<tr>
+						<td>{{ item.product.product_name }}</td>
+						<td>{{ item.quantity }}</td>
+						<td>${{ item.product.price|floatformat:2 }}</td>
+						<td>
+							<span
+								class="badge {% if item.status == 'Pending' %}bg-warning{% elif item.status == 'Completed' %}bg-success{% elif item.status == 'Canceled' %}bg-danger{% else %}bg-info{% endif %}">
+								{{ item.status }}
+							</span>
+						</td>
+						<td>
+							{% if item.status != "Canceled" %}
+							<form method="POST" action="{% url 'cancel_order_item' item.id %}">
 								{% csrf_token %}
-								<button class="btn btn-primary btn-sm">View Details</button>
+								<button type="submit" class="btn btn-danger btn-sm">Cancel</button>
 							</form>
-						{% endif %} -->
-
-						<!-- Cancel Order Button (Only if order is not Cancelled or Completed) -->
-						{% if order.status != "Cancelled" and order.status != "Completed" %}
-						<form action="{% url 'customer_cancel_order' order.id %}" method="POST" class="d-inline">
-							{% csrf_token %}
-							<button class="btn btn-danger btn-sm">Cancel Order</button>
-						</form>
-						{% endif %}
-						{% endif %}
-					</td>
-				</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-		{% else %}
-		<p>You have no orders yet.</p>
-		{% endif %}
-
+							{% endif %}
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+				<tfoot>
+					<tr>
+						<td colspan="2"><strong>Total Price:</strong></td>
+						<td colspan="3">${{ order_group.order.total_price|floatformat:2 }}</td>
+					</tr>
+				</tfoot>
+			</table>
+			{% empty %}
+			<p>You have no orders yet.</p>
+			{% endfor %}
+		</div>
+		{% endfor %}
 	</section>
 	<!-- End Cart Section -->
 
