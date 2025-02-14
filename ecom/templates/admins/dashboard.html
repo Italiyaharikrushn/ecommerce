@@ -403,54 +403,110 @@
 
                         </div><!-- End Customers Card -->
 
-                        <!-- Recent Sales -->
-                        <div class="col-12">
-                            <div class="card recent-sales overflow-auto">
+                        <div class="row">
+                            <!-- Recent Sales -->
+                            <div class="col-lg-6 col-6">
+                                <div class="card recent-sales overflow-auto">
 
-                                <div class="card-body">
-                                    <h5 class="card-title">Recent Sales <span>| Today</span></h5>
+                                    <div class="card-body">
+                                        <h5 class="card-title">Recent Sales <span>| Today</span></h5>
 
-                                    <table class="table table-borderless datatable">
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">Customer</th>
-                                                <th scope="col">Product</th>
-                                                <th scope="col">Price</th>
-                                                <th scope="col">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for item in customer_orders %}
-                                            <tr>
-                                                <td>{{ item.order.user.name }}</td>
-                                                <td><a href="#" class="text-primary">{{ item.product.product_name }}</a></td>
-                                                <td>₹{{ item.total_price }}</td>
-                                                <td>
-                                                    {% if item.status == "completed" %}
-                                                        <span class="badge bg-success">Completed</span>
-                                                    {% elif item.status == "pending" %}
-                                                        <span class="badge bg-warning">Pending</span>
-                                                    {% elif item.status == "shipped" %}
-                                                        <span class="badge bg-info">Shipped</span>
-                                                    {% elif item.status == "ready_to_ship" %}
-                                                        <span class="badge bg-primary">Ready to Ship</span>
-                                                    {% else %}
-                                                        <span class="badge bg-danger">Cancelled</span>
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                            {% empty %}
-                                            <tr>
-                                                <td colspan="4" class="text-center">No recent sales found.</td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
+                                        <table class="table table-borderless datatable">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Customer</th>
+                                                    <th scope="col">Product</th>
+                                                    <th scope="col">Price</th>
+                                                    <th scope="col">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for item in customer_orders %}
+                                                <tr>
+                                                    <td>{{ item.order.user.name }}</td>
+                                                    <td><a href="#" class="text-primary">{{ item.product.product_name }}</a></td>
+                                                    <td>₹{{ item.total_price }}</td>
+                                                    <td>
+                                                        {% if item.status == "completed" %}
+                                                            <span class="badge bg-success">Completed</span>
+                                                        {% elif item.status == "pending" %}
+                                                            <span class="badge bg-warning">Pending</span>
+                                                        {% elif item.status == "shipped" %}
+                                                            <span class="badge bg-info">Shipped</span>
+                                                        {% elif item.status == "ready_to_ship" %}
+                                                            <span class="badge bg-primary">Ready to Ship</span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">Cancelled</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% empty %}
+                                                <tr>
+                                                    <td colspan="4" class="text-center">No recent sales found.</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
                                 </div>
+                            </div><!-- End Recent Sales -->
 
+                            <div class="col-lg-6">
+                                <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Vertical Bar Chart</h5>
+                    
+                                    <!-- Vertical Bar Chart -->
+                                    <div id="verticalBarChart" style="min-height: 400px;" class="echart"></div>
+                    
+                                    <script>
+                                    document.addEventListener("DOMContentLoaded", () => {
+                                        echarts.init(document.querySelector("#verticalBarChart")).setOption({
+                                        title: {
+                                            text: 'World Population'
+                                        },
+                                        tooltip: {
+                                            trigger: 'axis',
+                                            axisPointer: {
+                                            type: 'shadow'
+                                            }
+                                        },
+                                        legend: {},
+                                        grid: {
+                                            left: '3%',
+                                            right: '4%',
+                                            bottom: '3%',
+                                            containLabel: true
+                                        },
+                                        xAxis: {
+                                            type: 'value',
+                                            boundaryGap: [0, 0.01]
+                                        },
+                                        yAxis: {
+                                            type: 'category',
+                                            data: ['Brazil', 'Indonesia', 'USA', 'India', 'China', 'World']
+                                        },
+                                        series: [{
+                                            name: '2011',
+                                            type: 'bar',
+                                            data: [18203, 23489, 29034, 104970, 131744, 630230]
+                                            },
+                                            {
+                                            name: '2012',
+                                            type: 'bar',
+                                            data: [19325, 23438, 31000, 121594, 134141, 681807]
+                                            }
+                                        ]
+                                        });
+                                    });
+                                    </script>
+                                    <!-- End Vertical Bar Chart -->
+                    
+                                </div>
+                                </div>
                             </div>
-                        </div><!-- End Recent Sales -->
-
+                        </div>
                         <!-- Top Selling -->
                         <div class="col-12">
                             <div class="card top-selling overflow-auto">
