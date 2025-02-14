@@ -901,24 +901,28 @@ def generate_invoice(request, order_id):
             seller_address = None
         
         if not hasattr(order, 'billing_address') or order.billing_address is None:
-            billing_address = BillingAddress.objects.create(
-                user=order.user,
-                order=order,
-                billing_fullname=order.user.name,
-                billing_address="Default Billing Address",
-                billing_city="Default City",
-                billing_state="Default State",
-                billing_pincode="000000",
-                billing_country="Default Country",
-                billing_contact_number="0000000000",
-                shipping_fullname=order.user.name,
-                shipping_address="Default Shipping Address",
-                shipping_city="Default City",
-                shipping_state="Default State",
-                shipping_pincode="000000",
-                shipping_country="Default Country",
-                shipping_contact_number="0000000000",
-            )
+            existing_billing_address = BillingAddress.objects.filter(user=order.user).first()
+            if existing_billing_address:
+                billing_address = existing_billing_address
+            else:
+                billing_address = BillingAddress.objects.create(
+                    user=order.user,
+                    order=order,
+                    billing_fullname=order.user.name,
+                    billing_address="Default Billing Address",
+                    billing_city="Default City",
+                    billing_state="Default State",
+                    billing_pincode="000000",
+                    billing_country="Default Country",
+                    billing_contact_number="0000000000",
+                    shipping_fullname=order.user.name,
+                    shipping_address="Default Shipping Address",
+                    shipping_city="Default City",
+                    shipping_state="Default State",
+                    shipping_pincode="000000",
+                    shipping_country="Default Country",
+                    shipping_contact_number="0000000000",
+                )
         else:
             billing_address = order.billing_address
         
