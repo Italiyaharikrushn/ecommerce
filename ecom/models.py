@@ -23,6 +23,7 @@ class User(models.Model):
 
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
+    country = models.CharField(max_length=50)
     phone = models.CharField(max_length=14)
     password = models.CharField(max_length=255)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default="Other")

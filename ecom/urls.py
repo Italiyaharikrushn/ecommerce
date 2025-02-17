@@ -19,6 +19,7 @@ urlpatterns = [
     path("admins/orders/", views.order, name="order"),
     path("admins/tablesdata/", views.table_data, name="table_data"),
     path("admins/tablesgeneral/", views.general_data, name="general_data"),
+    path("user-chart/", views.user_chart, name="user-chart"),
 
     # Logout
     path("logout/", views.logout, name="logout"),

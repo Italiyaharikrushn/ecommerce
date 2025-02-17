@@ -909,3 +909,25 @@ def recent_sales(request):
         "customer_orders": customer_orders
     }
     return render(request, "recent_sales.html", context)
+
+def user_chart(request):
+    country_name = request.GET.get('country', 'India')
+
+    countries = User.objects.values('country').distinct()
+    data = {
+        "roles": ["Customer", "Seller"],
+        "countries": [],
+        "customers": [],
+        "sellers": []
+    }
+
+    for country in countries:
+        country_name = country['country']
+        customers_count = User.objects.filter(role="ROLE_CUSTOMER", country=country_name).count()
+        sellers_count = User.objects.filter(role="seller_owner", country=country_name).count()
+
+        data["countries"].append(country_name)
+        data["customers"].append(customers_count)
+        data["sellers"].append(sellers_count)
+
+    return JsonResponse(data)
