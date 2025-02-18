@@ -13,7 +13,7 @@ from xhtml2pdf import pisa
 from io import BytesIO
 import json
 from datetime import datetime, date, timedelta
-from django.db.models import Prefetch, Q
+from django.db.models import Prefetch, Q, Count
 
 from .utils import never_cache_custom, user, user_login_required, check_user_exists
 
@@ -911,23 +911,40 @@ def recent_sales(request):
     return render(request, "recent_sales.html", context)
 
 def user_chart(request):
-    country_name = request.GET.get('country', 'India')
+    countries = User.objects.values_list("country", flat=True).distinct()
+    
+    user_counts = (
+        User.objects.values("country", "role")
+        .annotate(count=Count("id"))
+    )
 
-    countries = User.objects.values('country').distinct()
     data = {
         "roles": ["Customer", "Seller"],
-        "countries": [],
+        "countries": list(countries),
         "customers": [],
         "sellers": []
     }
 
-    for country in countries:
-        country_name = country['country']
-        customers_count = User.objects.filter(role="ROLE_CUSTOMER", country=country_name).count()
-        sellers_count = User.objects.filter(role="seller_owner", country=country_name).count()
+    country_stats = {country: {"customers": 0, "sellers": 0} for country in countries}
 
-        data["countries"].append(country_name)
-        data["customers"].append(customers_count)
-        data["sellers"].append(sellers_count)
+    for entry in user_counts:
+        country = entry["country"]
+        role = entry["role"]
+        count = entry["count"]
+
+        if role == "ROLE_CUSTOMER":
+            country_stats[country]["customers"] = count
+        elif role == "seller_owner":
+            country_stats[country]["sellers"] = count
+
+    data["customers"] = [country_stats[c]["customers"] for c in countries]
+    data["sellers"] = [country_stats[c]["sellers"] for c in countries]
+
+    return JsonResponse(data)
+
+def order_status_chart(request):
+    status_counts = OrderItem.objects.values("status").annotate(count=Count("id"))
+
+    data = {entry["status"]: entry["count"] for entry in status_counts}
 
     return JsonResponse(data)

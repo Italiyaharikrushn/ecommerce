@@ -434,181 +434,28 @@
 
                         </div><!-- End Customers Card -->
 
+                        <!-- Status Traffic & User Bar -->
                         <div class="row">
-                            <!-- Recent Sales Section -->
-                            <div class="col-lg-6 col-6">
-                                <div class="card recent-sales overflow-auto">
-                                    <!-- Website Traffic -->
-                                    <div class="card">
-                                        <div class="filter">
-                                            <a class="icon" href="#" data-bs-toggle="dropdown">
-                                                <i class="bi bi-three-dots"></i>
-                                            </a>
-                                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                                <li class="dropdown-header text-start">
-                                                    <h6>Filter</h6>
-                                                </li>
-                                                <li><a class="dropdown-item" href="#">Today</a></li>
-                                                <li><a class="dropdown-item" href="#">This Month</a></li>
-                                                <li><a class="dropdown-item" href="#">This Year</a></li>
-                                            </ul>
-                                        </div>
-                        
-                                        <div class="card-body pb-0">
-                                            <h5 class="card-title">Website Traffic <span>| Today</span></h5>
-                                            <div id="trafficChart" style="min-height: 400px;" class="echart"></div>
-                        
-                                            <script>
-                                                document.addEventListener("DOMContentLoaded", () => {
-                                                    echarts.init(document.querySelector("#trafficChart")).setOption({
-                                                        tooltip: {
-                                                            trigger: 'item'
-                                                        },
-                                                        legend: {
-                                                            top: '5%',
-                                                            left: 'center'
-                                                        },
-                                                        series: [{
-                                                            name: 'Access From',
-                                                            type: 'pie',
-                                                            radius: ['40%', '70%'],
-                                                            avoidLabelOverlap: false,
-                                                            label: {
-                                                                show: false,
-                                                                position: 'center'
-                                                            },
-                                                            emphasis: {
-                                                                label: {
-                                                                    show: true,
-                                                                    fontSize: '18',
-                                                                    fontWeight: 'bold'
-                                                                }
-                                                            },
-                                                            labelLine: {
-                                                                show: false
-                                                            },
-                                                            data: [
-                                                                { value: 1048, name: 'Search Engine' },
-                                                                { value: 735, name: 'Direct' },
-                                                                { value: 580, name: 'Email' },
-                                                                { value: 484, name: 'Union Ads' },
-                                                                { value: 300, name: 'Video Ads' }
-                                                            ]
-                                                        }]
-                                                    });
-                                                });
-                                            </script>
-                                        </div>
-                                    </div><!-- End Website Traffic -->
-                                </div>
-                            </div><!-- End Recent Sales Section -->
-                        
-                            <!-- Customer & Seller Distribution Section -->
-                            <div class="col-lg-6">
-                                <div class="card">
-                                    <div class="chart-container">
-                                        <h2>Customer & Seller Distribution</h2>
-                                        <div id="userChart" style="height: 500px;"></div>
+                            <!-- Order Status Overview -->
+                            <div class="col-lg-6 col-md-12">
+                                <div class="card shadow-sm" style="height: 550px;">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-center">Order Status Overview</h5>
+                                        <div id="orderStatusChart" style="height: 400px;"></div>
                                     </div>
-                        
-                                    <script>
-                                        document.addEventListener("DOMContentLoaded", () => {
-                                            fetch("{% url 'user-chart' %}")
-                                                .then(response => response.json())
-                                                .then(data => {
-                                                    const chart = echarts.init(document.getElementById("userChart"));
-                                                    chart.setOption({
-                                                        backgroundColor: "#f8f9fa",
-                                                        title: {
-                                                            text: "Customer & Seller Overview",
-                                                            left: "center",
-                                                            textStyle: {
-                                                                fontSize: 20,
-                                                                fontWeight: "bold",
-                                                                color: "#333"
-                                                            }
-                                                        },
-                                                        tooltip: {
-                                                            trigger: "axis",
-                                                            axisPointer: { type: "shadow" },
-                                                            formatter: function (params) {
-                                                                const customer = Math.round(params[0].value);
-                                                                const seller = Math.round(params[1].value);
-                                                                return `${params[0].name}<br/>Customer: ${customer}<br/>Seller: ${seller}`;
-                                                            }
-                                                        },
-                                                        legend: {
-                                                            data: ["Customer", "Seller"],
-                                                            bottom: 0,
-                                                            textStyle: { color: "#666" }
-                                                        },
-                                                        grid: {
-                                                            left: "5%",
-                                                            right: "5%",
-                                                            bottom: "15%",
-                                                            containLabel: true
-                                                        },
-                                                        xAxis: {
-                                                            type: "value",
-                                                            axisLabel: {
-                                                                color: "#333",
-                                                                fontSize: 14,
-                                                                formatter: function (value) {
-                                                                    return Math.round(value);
-                                                                }
-                                                            },
-                                                            axisLine: { show: false },
-                                                            interval: 1
-                                                        },
-                                                        yAxis: {
-                                                            type: "category",
-                                                            data: data.countries,
-                                                            axisLabel: { color: "#333", fontSize: 14 }
-                                                        },
-                                                        series: [
-                                                            {
-                                                                name: "Customer",
-                                                                type: "bar",
-                                                                data: data.customers,
-                                                                barWidth: "30%",
-                                                                itemStyle: {
-                                                                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                                                                        { offset: 0, color: "#42a5f5" },
-                                                                        { offset: 1, color: "#1e88e5" }
-                                                                    ])
-                                                                },
-                                                                label: {
-                                                                    show: true,
-                                                                    position: "inside",
-                                                                    color: "#fff"
-                                                                }
-                                                            },
-                                                            {
-                                                                name: "Seller",
-                                                                type: "bar",
-                                                                data: data.sellers,
-                                                                barWidth: "30%",
-                                                                itemStyle: {
-                                                                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                                                                        { offset: 0, color: "#66bb6a" },
-                                                                        { offset: 1, color: "#43a047" }
-                                                                    ])
-                                                                },
-                                                                label: {
-                                                                    show: true,
-                                                                    position: "inside",
-                                                                    color: "#fff"
-                                                                }
-                                                            }
-                                                        ]
-                                                    });
-                                                });
-                                        });
-                                    </script>
                                 </div>
-                            </div><!-- End Customer & Seller Distribution Section -->
+                            </div>
+
+                            <!-- Customer & Seller Distribution -->
+                            <div class="col-lg-6 col-md-12">
+                                <div class="card shadow-sm" style="height: 550px;">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-center">Customer & Seller Overview</h5>
+                                        <div id="userChart" style="height: 400px;"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        
 
                         <!-- Top Selling -->
                         <div class="col-12">
@@ -732,6 +579,66 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="{% static 'vendor/php-email-form/validate.js' %}"></script>
     <script src="{% static 'js/main.js' %}"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Fetch and render Order Status Pie Chart
+            fetch("{% url 'order-status-chart' %}")
+                .then(response => response.json())
+                .then(data => {
+                    let chartData = Object.keys(data).map(key => ({
+                        name: key.replace(/_/g, " "),
+                        value: data[key]
+                    }));
+    
+                    let chart = echarts.init(document.querySelector("#orderStatusChart"));
+                    chart.setOption({
+                        tooltip: { trigger: "item" },
+                        legend: { top: "5%", left: "center" },
+                        series: [{
+                            name: "Order Status",
+                            type: "pie",
+                            radius: ["40%", "70%"],
+                            avoidLabelOverlap: false,
+                            label: { show: false, position: "center" },
+                            emphasis: { label: { show: true, fontSize: "18", fontWeight: "bold" } },
+                            labelLine: { show: false },
+                            data: chartData
+                        }]
+                    });
+                })
+                .catch(error => console.error("Error fetching chart data:", error));
+    
+            // Fetch and render User Bar Chart
+            fetch("{% url 'user-chart' %}")
+                .then(response => response.json())
+                .then(data => {
+                    let chart = echarts.init(document.getElementById("userChart"));
+                    chart.setOption({
+                        backgroundColor: "#f8f9fa",
+                        title: {
+                            text: "Customer & Seller Overview",
+                            textStyle: { fontSize: 20, fontWeight: "bold", color: "#333" }
+                        },
+                        tooltip: {
+                            trigger: "axis",
+                            axisPointer: { type: "shadow" },
+                            formatter: params => `${params[0].name}<br/>Customer: ${params[0].value}<br/>Seller: ${params[1].value}`
+                        },
+                        legend: { data: ["Customer", "Seller"], bottom: 0, textStyle: { color: "#666" } },
+                        grid: { left: "5%", right: "5%", bottom: "15%", containLabel: true },
+                        xAxis: { type: "value", axisLabel: { color: "#333", fontSize: 14 }, axisLine: { show: false }, interval: 1 },
+                        yAxis: { type: "category", data: data.countries, axisLabel: { color: "#333", fontSize: 14 } },
+                        series: [
+                            { name: "Customer", type: "bar", data: data.customers, barWidth: "30%", itemStyle: { color: "#42a5f5" }, label: { show: true, position: "inside", color: "#fff" } },
+                            { name: "Seller", type: "bar", data: data.sellers, barWidth: "30%", itemStyle: { color: "#66bb6a" }, label: { show: true, position: "inside", color: "#fff" } }
+                        ]
+                    });
+                })
+                .catch(error => console.error("Error fetching chart data:", error));
+        });
+    </script>
+    
 
 </body>
 
