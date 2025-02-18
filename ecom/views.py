@@ -1,3 +1,6 @@
+from .models import ( Product, User, Contact, About, CartItem, Cart, Order, OrderItem, BillingAddress, Payment, UserRole, ShippingAddress, BankDetails)
+from django.shortcuts import render, redirect
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden, HttpResponseNotAllowed
 from django.shortcuts import render, redirect
 from .models import ( Product, User, Contact, About, CartItem, Cart, Order, OrderItem, BillingAddress, Payment, UserRole, ShippingAddress, BankDetails)
 from django.http import JsonResponse, HttpResponse, HttpResponseForbidden, HttpResponseNotAllowed
@@ -6,14 +9,14 @@ from django.core.mail import send_mail
 from django.template.loader import get_template
 from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
-from django.db.models import F, Min
 from django.db import transaction
 from django.contrib.auth.hashers import make_password, check_password
 from xhtml2pdf import pisa
 from io import BytesIO
 import json
 from datetime import datetime, date, timedelta
-from django.db.models import Prefetch, Q, Count
+from django.db.models import Prefetch, Q, Count, Sum, F, Min
+from django.utils import timezone
 
 from .utils import never_cache_custom, user, user_login_required, check_user_exists
 
@@ -948,3 +951,22 @@ def order_status_chart(request):
     data = {entry["status"]: entry["count"] for entry in status_counts}
 
     return JsonResponse(data)
+
+def order_chart(request):
+    today = datetime.today().date()
+    last_30_days = [today - timedelta(days=i) for i in range(29, -1, -1)]
+
+    data = OrderItem.objects.filter(order_date__gte=today - timedelta(days=15)) \
+                            .values("order_date") \
+                            .annotate(order_count=Count("id")) \
+                            .order_by("order_date")
+
+    order_data = {item["order_date"]: item["order_count"] for item in data}
+
+    labels = [date.strftime("%d %b %Y") for date in last_30_days]
+    values = [order_data.get(date, 0) for date in last_30_days]
+
+    return JsonResponse({"labels": labels, "values": values})
+
+def order_chart_page(request):
+    return render(request, "seller/dashboard.html")

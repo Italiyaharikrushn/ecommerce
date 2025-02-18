@@ -21,6 +21,8 @@ urlpatterns = [
     path("admins/tablesgeneral/", views.general_data, name="general_data"),
     path("user-chart/", views.user_chart, name="user-chart"),
     path("order-status-chart/", views.order_status_chart, name="order-status-chart"),
+    path("order-chart/", views.order_chart, name="order-chart"),
+    path("order-chart-page/", views.order_chart_page, name="order-chart-page"),
 
     # Logout
     path("logout/", views.logout, name="logout"),
