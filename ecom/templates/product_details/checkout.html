@@ -126,7 +126,7 @@
 						</div>
 						<div class="form-group">
 							<label for="billing_state">State</label>
-							<input type="text" class="form-control" id="billing_state" name="billing_state" value="{{ billing_address.billing_state }}" placeholder="Enter your state">
+							<input type="text" class="form-control" id="billing_state" name="billing_state" value="{% if billing_address.billing_state %}{{ billing_address.billing_state }}{% else %}{{ '' }}{% endif %}" placeholder="Enter your state">
 						</div>
 						<div class="form-group">
 							<label for="billing_pincode">Pin Code</label>
@@ -159,7 +159,7 @@
 						</div>
 						<div class="form-group">
 							<label for="shipping_state">State</label>
-							<input type="text" class="form-control" id="shipping_state" name="shipping_state" value="{{ billing_address.shipping_state }}" placeholder="Enter state">
+							<input type="text" class="form-control" id="shipping_state" name="shipping_state" value="{% if billing_address.shipping_state %}{{ billing_address.shipping_state }}{% else %}{{ '' }}{% endif %}" placeholder="Enter state">
 						</div>
 						<div class="form-group">
 							<label for="shipping_pincode">Pin Code</label>
