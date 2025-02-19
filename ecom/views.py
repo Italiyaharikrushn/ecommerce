@@ -8,8 +8,8 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.template.loader import get_template
 from django.urls import reverse
+from django.db import transaction, IntegrityError
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
-from django.db import transaction
 from django.contrib.auth.hashers import make_password, check_password
 from xhtml2pdf import pisa
 from io import BytesIO
@@ -37,6 +37,7 @@ def notify_sellers(order):
         send_mail(subject=email_subject,message=email_body,from_email="no-reply@example.com",recipient_list=[seller.email],)
 
 def register_user(request, role, template, redirect_url):
+    """Generic function to register users (Customer & Admin)."""
     if request.method == "POST":
         name = request.POST.get("name")
         email = request.POST.get("email")
@@ -45,10 +46,19 @@ def register_user(request, role, template, redirect_url):
         gender = request.POST.get("gender")
 
         if User.objects.filter(email=email, role=role).exists():
-            context = {"name": name,"phone": phone,"gender": gender,"error": "Email already registered.",}
-            return render(request, template, context)
+            return render(request, template, {
+                "name": name, "phone": phone, "gender": gender, 
+                "error": "Email already registered."
+            })
 
-        User.objects.create(name=name,email=email,phone=phone,password=make_password(password),gender=gender,role=role,)
+        User.objects.create(
+            name=name,
+            email=email,
+            phone=phone,
+            password=make_password(password),
+            gender=gender,
+            role=role
+        )
 
         messages.success(request, "Registration successful! Please log in.")
         return redirect(redirect_url)
@@ -63,10 +73,10 @@ def register_customer(request):
 @never_cache_custom
 @user
 def register_seller(request):
+    """Register a new seller with business details."""
     if request.method == 'POST':
         try:
             with transaction.atomic():
-                
                 user = User.objects.create(
                     name=request.POST['name'],
                     email=request.POST['email'],
@@ -96,44 +106,23 @@ def register_seller(request):
                 messages.success(request, "Seller registration successful!")
                 return redirect('seller_dashboard')
 
+        except IntegrityError:
+            messages.error(request, "Seller already exists.")
         except Exception as e:
             messages.error(request, f"Error during registration: {str(e)}")
-            return render(request, 'seller/register.html')
 
     return render(request, 'seller/register.html')
 
 @never_cache_custom
 @user
 def register_admin(request):
-    if request.method == "POST":
-        name = request.POST.get("name")
-        email = request.POST.get("email")
-        phone = request.POST.get("phone")
-        password = request.POST.get("password")
-        gender = request.POST.get("gender")
-
-        if User.objects.filter(email=email).exists():
-            messages.error(request, "This email is already registered.")
-            return redirect("register_admin")
-
-        admin_user = User.objects.create(
-            name=name,
-            email=email,
-            phone=phone,
-            password=make_password(password),
-            gender=gender,
-            role=UserRole.ADMIN  
-        )
-        messages.success(request, "Admin registered successfully. Please login.")
-        return redirect("login_admin")
-
-    return render(request, "admins/register.html")
+    """Register an admin user."""
+    return register_user(request, UserRole.ADMIN, "admins/register.html", "login_admin")
 
 def handle_login(request, role, template, redirect_url):
     """Handles login functionality for different user roles."""
-    
-    # ✅ Prevent logged-in users from accessing the login page
-    if request.session.get("user_id"):
+
+    if request.session.get("user_id"):  # ✅ Prevent logged-in users from accessing login page
         return redirect(redirect_url)
 
     if request.method == "POST":
@@ -141,12 +130,14 @@ def handle_login(request, role, template, redirect_url):
         password = request.POST.get("password")
 
         if not email or not password:
-            return render(request, template, {"error": "Both fields are required."})
+            messages.error(request, "Both email and password are required.")
+            return render(request, template)
 
         try:
             user = User.objects.get(email=email, role=role)
         except User.DoesNotExist:
-            return render(request, template, {"error": "Invalid credentials."})
+            messages.error(request, "Invalid email or password.")
+            return render(request, template)
 
         if check_password(password, user.password):
             request.session.update({
@@ -155,27 +146,30 @@ def handle_login(request, role, template, redirect_url):
                 "user_role": user.role,
             })
             return redirect(redirect_url)
-        
-        return render(request, template, {"error": "Incorrect password."})
 
+        messages.error(request, "Incorrect password.")
+    
     return render(request, template)
 
-@never_cache_custom
-@check_user_exists
+# @user_login_required
 def login_customer(request):
+    """Handles customer login."""
     return handle_login(request, UserRole.CUSTOMER, "product_details/login.html", "home_view")
 
-@never_cache_custom
-@check_user_exists
+
+# @user_login_required
 def login_seller(request):
+    """Handles seller login."""
     return handle_login(request, UserRole.SELLER_OWNER, "seller/login.html", "seller_dashboard")
 
-@never_cache_custom
-@check_user_exists
+
+# @user_login_required
 def login_admin(request):
+    """Handles admin login."""
     return handle_login(request, UserRole.ADMIN, "admins/login.html", "admin_dashboard")
 
 def logout(request):
+    """Logs out the user and redirects them accordingly."""
     user_role = request.session.pop("user_role", None)
     request.session.flush()
 
@@ -589,6 +583,8 @@ def payment_view(request, order_id):
 
     return render(request, "product_details/payment.html", {"order": order})
 
+@never_cache_custom
+@user_login_required
 def order_success(request, order_id):
     try:
         order = Order.objects.prefetch_related("order_items__product__seller").get(id=order_id)
@@ -597,10 +593,14 @@ def order_success(request, order_id):
 
     return render(request,"product_details/thankyou.html",{"order": order, "seller": order.order_items.first().product.seller},)
 
+@never_cache_custom
+@user_login_required
 def seller_orders(request):
     orders = Order.objects.all()
     return render(request, 'seller/order.html', {'orders': orders})
 
+@never_cache_custom
+@user_login_required
 def my_orders_view(request):
     user_role = request.session.get("user_role")
     user_id = request.session.get("user_id")
