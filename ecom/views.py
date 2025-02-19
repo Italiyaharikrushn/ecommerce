@@ -130,6 +130,12 @@ def register_admin(request):
     return render(request, "admins/register.html")
 
 def handle_login(request, role, template, redirect_url):
+    """Handles login functionality for different user roles."""
+    
+    # ✅ Prevent logged-in users from accessing the login page
+    if request.session.get("user_id"):
+        return redirect(redirect_url)
+
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
@@ -143,25 +149,28 @@ def handle_login(request, role, template, redirect_url):
             return render(request, template, {"error": "Invalid credentials."})
 
         if check_password(password, user.password):
-            request.session.update({"user_id": user.id,"user_name": user.name,"user_role": user.role,})
+            request.session.update({
+                "user_id": user.id,
+                "user_name": user.name,
+                "user_role": user.role,
+            })
             return redirect(redirect_url)
+        
+        return render(request, template, {"error": "Incorrect password."})
 
     return render(request, template)
 
 @never_cache_custom
-@user
 @check_user_exists
 def login_customer(request):
     return handle_login(request, UserRole.CUSTOMER, "product_details/login.html", "home_view")
 
 @never_cache_custom
-@user
 @check_user_exists
 def login_seller(request):
     return handle_login(request, UserRole.SELLER_OWNER, "seller/login.html", "seller_dashboard")
 
 @never_cache_custom
-@user
 @check_user_exists
 def login_admin(request):
     return handle_login(request, UserRole.ADMIN, "admins/login.html", "admin_dashboard")
@@ -233,9 +242,7 @@ def admin_dashboard(request):
         return redirect('customer_dashboard')
 
     today = datetime.today().date()
-
     customer_orders = OrderItem.objects.filter(order_date=today)
-
     total_orders = Order.objects.count()
     today_orders = OrderItem.objects.filter(order_date=today).count()
     completed_orders = Order.objects.filter(status="Delivered").count()
@@ -246,7 +253,10 @@ def admin_dashboard(request):
         "completed_orders": completed_orders,
         "customer_orders": customer_orders
     }
-    return render(request, "admins/dashboard.html", context)
+    
+    response = render(request, "admins/dashboard.html", context)
+    response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    return response
 
 @never_cache_custom
 @user_login_required
