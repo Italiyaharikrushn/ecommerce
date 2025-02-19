@@ -207,11 +207,16 @@
 							</span>
 						</td>
 						<td>
-							{% if item.status != "Canceled" %}
-							<form method="POST" action="{% url 'cancel_order_item' item.id %}">
-								{% csrf_token %}
-								<button type="submit" class="btn btn-danger btn-sm">Cancel</button>
-							</form>
+							{% if item.status == "delivered" %}
+								<form method="POST" action="{% url 'return_order_item' item.id %}">
+									{% csrf_token %}
+									<button type="submit" class="btn btn-primary btn-sm">Return</button>
+								</form>
+							{% elif item.status != "cancelled" %}
+								<form method="POST" action="{% url 'cancel_order_item' item.id %}">
+									{% csrf_token %}
+									<button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+								</form>
 							{% endif %}
 						</td>
 					</tr>

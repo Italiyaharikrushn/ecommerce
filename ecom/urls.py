@@ -50,6 +50,7 @@ urlpatterns = [
     path("order-success/<int:order_id>/", views.order_success, name="order_success"),
     path("orders/accept/<int:item_id>/", views.accept_order, name="accept_order"),
     path("customer/cancel-order/<int:order_id>/", views.customer_cancel_order, name="customer_cancel_order"),
+    path('order/return/<int:item_id>/', views.return_order_item, name='return_order_item'),
 
     # Cart Management
     path("cart/", views.get_cart, name="cart_view"),

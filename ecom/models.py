@@ -108,6 +108,7 @@ class Order(models.Model):
 			("Shipped", "Shipped"),
 			("Delivered", "Delivered"),
 			("Cancelled", "Cancelled"),
+            ("Return", "Return"),
 		]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
@@ -126,8 +127,10 @@ class OrderItem(models.Model):
 			("pending", "Pending"),
 			("ready_to_ship", "Ready_To_Ship"),
 			("shipped", "Shipped"),
-			("completed", "Completed"),
+			("delivered", "Delivered"),
+            ("completed", "Completed"),
 			("cancelled", "Cancelled"),
+            ("return", "Return"),
 		]
 
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')

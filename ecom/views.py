@@ -15,8 +15,9 @@ from xhtml2pdf import pisa
 from io import BytesIO
 import json
 from datetime import datetime, date, timedelta
-from django.db.models import Prefetch, Q, Count, Sum, F, Min
-from django.utils import timezone
+from django.db.models import Prefetch, Q, Count, F, Min
+from django.http import HttpResponseRedirect
+from django.utils.timezone import now
 
 from .utils import never_cache_custom, user, user_login_required, check_user_exists
 
@@ -529,7 +530,7 @@ def checkout(request):
                 billing_address.save()
 
                 dispatch_date = date.today() + timedelta(days=2)
-                delivery_date = dispatch_date + timedelta(days=5)  # Corrected tuple issue
+                delivery_date = dispatch_date + timedelta(days=5)
 
                 order_items = [
                     OrderItem(
@@ -649,64 +650,55 @@ def my_orders_view(request):
         raise PermissionDenied("You do not have permission to view this page.")
 
 def view_orders(request):
+    today = date.today()
+    two_days_from_today = today + timedelta(days=2)
+
     user_id = request.session.get("user_id")
     user_role = request.session.get("user_role")
 
     if user_role != UserRole.SELLER_OWNER:
         return redirect("login_seller")
 
-    try:
-        seller = User.objects.get(id=user_id, role=UserRole.SELLER_OWNER)
-    except User.DoesNotExist:
-        raise PermissionDenied("Seller not found.")
+    seller = User.objects.get(id=user_id, role=UserRole.SELLER_OWNER)
+
+    OrderItem.objects.filter(status="shipped", delivery_date=today).update(status="delivered")
 
     order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related("order", "product")
 
+    # status_counts = dict(OrderItem.objects.filter(product__seller_id=user_id).values("status").annotate(count=Count("id")))
+    statuses = list(OrderItem.objects.filter(product__seller_id=user_id).values("status").annotate(count=Count("status")))
+    
+    all_statuses = {"onhold": 0, "pending": 0, "ready_to_ship": 0, "shipped": 0, "return_requested": 0, "returned": 0}
+    for status in statuses:
+        all_statuses[status["status"].lower()] = status["count"]
+
     orders_dict = {}
-
-    status_counts = {"onhold": 0, "pending": 0, "ready_to_ship": 0, "shipped": 0}
-
-    today = date.today()
-    two_days_from_today = today + timedelta(days=2)
 
     for item in order_items:
         order_id = item.order.id
-        order_status = item.status.lower()
-
-        if order_status in status_counts:
-            status_counts[order_status] += 1
 
         if order_id not in orders_dict:
-            orders_dict[order_id] = {
-                "order": item.order,
-                "items": [],
-                "total_price": 0,
-                "order_date": None,
-            }
+            orders_dict[order_id] = {"order": item.order,"items": [],"total_price": 0,"order_date": None,}
 
         orders_dict[order_id]["items"].append(item)
         orders_dict[order_id]["total_price"] += item.product.price * item.quantity
 
-        earliest_order_date = OrderItem.objects.filter(order_id=order_id).aggregate(Min("order_date"))["order_date__min"]
-        orders_dict[order_id]["order_date"] = earliest_order_date
+    order_dates = OrderItem.objects.filter(order_id__in=orders_dict.keys()).values("order_id").annotate(
+        order_date=Min("order_date")
+    )
 
+    for entry in order_dates:
+        if entry["order_id"] in orders_dict:
+            orders_dict[entry["order_id"]]["order_date"] = entry["order_date"]
+
+    for item in order_items:
         if item.dispatch_date:
             if today > item.dispatch_date:
                 messages.error(request, f"Order item '{item.product.product_name}' has breached the dispatch date!")
             elif two_days_from_today >= item.dispatch_date:
                 messages.warning(request, f"Order item '{item.product.product_name}' is nearing the dispatch date!")
 
-    return render(
-        request,
-        "seller/order.html",
-        {
-            "name": seller.name,
-            "orders": orders_dict.values(),
-            "today": today,
-            "two_days_from_today": two_days_from_today,
-            "status_counts": status_counts,
-        },
-    )
+    return render(request,"seller/order.html",{"name": seller.name,"orders": orders_dict.values(),"today": today,"two_days_from_today": two_days_from_today,"status_counts": all_statuses,},)
 
 def mark_as_shipped(request, item_id):
     order_item = OrderItem.objects.get(id=item_id)
@@ -718,7 +710,29 @@ def mark_as_shipped(request, item_id):
     else:
         messages.warning(request, "This order item cannot be shipped.")
 
-    return redirect("view_orders")
+    return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/"))
+
+def update_order_status():
+    today = now().date()
+    
+    # Fetch all shipped orders where delivery date is today
+    delivered_items = OrderItem.objects.filter(status="shipped", delivery_date=today)
+    
+    for item in delivered_items:
+        item.status = "delivered"
+        item.save()
+
+def return_order_item(request, item_id):
+    order_item = OrderItem.objects.get(id=item_id)
+
+    if order_item.status == "Delivered":
+        order_item.status = "Returned"
+        order_item.save()
+        messages.success(request, f"Order item '{order_item.product.product_name}' has been marked as Returned.")
+    else:
+        messages.warning(request, "This order item cannot be returned.")
+
+    return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/"))
 
 def cancel_order_item(request, item_id):
     if request.method != "POST":
@@ -827,7 +841,7 @@ def accept_order(request, item_id):
             raise PermissionDenied("Order item not found.")
 
         return redirect("view_orders")
-
+ 
 def generate_invoice(request, order_id):
     try:
         order = Order.objects.get(id=order_id)
