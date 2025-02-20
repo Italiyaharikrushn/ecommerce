@@ -152,24 +152,21 @@ def handle_login(request, role, template, redirect_url):
     return render(request, template)
 
 # @user_login_required
+@never_cache_custom
 def login_customer(request):
-    """Handles customer login."""
     return handle_login(request, UserRole.CUSTOMER, "product_details/login.html", "home_view")
 
-
 # @user_login_required
+@never_cache_custom
 def login_seller(request):
-    """Handles seller login."""
     return handle_login(request, UserRole.SELLER_OWNER, "seller/login.html", "seller_dashboard")
 
-
 # @user_login_required
+@never_cache_custom
 def login_admin(request):
-    """Handles admin login."""
     return handle_login(request, UserRole.ADMIN, "admins/login.html", "admin_dashboard")
 
 def logout(request):
-    """Logs out the user and redirects them accordingly."""
     user_role = request.session.pop("user_role", None)
     request.session.flush()
 
@@ -196,45 +193,37 @@ def home_view(request):
     return render(request, "product_details/index.html")
 
 @never_cache_custom
+@user_login_required(allowed_roles=["seller_owner"])
 def seller_dashboard(request):
-    if request.session.get("user_role") != UserRole.SELLER_OWNER:
-        return redirect("login_seller")
-
     user_id = request.session.get("user_id")
-    if not user_id:
-        return redirect("login_seller")
 
     try:
-        seller = User.objects.get(id=user_id, role=UserRole.SELLER_OWNER)
+        seller = User.objects.get(id=user_id, role="seller_owner")
     except User.DoesNotExist:
         raise PermissionDenied("Seller not found.")
 
     seller_products = Product.objects.filter(seller_id=user_id)
-
     order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related("order", "product")
-    seller_orders = {}
 
+    seller_orders = {}
     for item in order_items:
         order_id = item.order.id
         if order_id not in seller_orders:
-            seller_orders[order_id] = {"order": item.order,"items": [],"total_price": 0,}
-
+            seller_orders[order_id] = {"order": item.order, "items": [], "total_price": 0}
+        
         seller_orders[order_id]["items"].append(item)
         seller_orders[order_id]["total_price"] += item.product.price * item.quantity
 
-    return render(request,"seller/dashboard.html",{"name": seller.name,"products": seller_products,"orders": seller_orders.values(),},)
+    return render(request, "seller/dashboard.html", {"name": seller.name, "products": seller_products, "orders": seller_orders.values()})
 
 @never_cache_custom
+@user_login_required(allowed_roles=["ROLE_CUSTOMER"])
 def customer_dashboard(request):
-    if request.session.get("user_role") != UserRole.CUSTOMER:
-        return redirect("login")
     return render(request, "product_details/index.html")
 
 @never_cache_custom
+@user_login_required(allowed_roles=["ROLE_ADMIN"])
 def admin_dashboard(request):
-    if request.session.get("user_role") != UserRole.ADMIN:
-        return redirect('customer_dashboard')
-
     today = datetime.today().date()
     customer_orders = OrderItem.objects.filter(order_date=today)
     total_orders = Order.objects.count()
@@ -248,9 +237,7 @@ def admin_dashboard(request):
         "customer_orders": customer_orders
     }
     
-    response = render(request, "admins/dashboard.html", context)
-    response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-    return response
+    return render(request, "admins/dashboard.html", context)
 
 @never_cache_custom
 @user_login_required
@@ -318,6 +305,8 @@ def add_product(request):
 
     return render(request, "seller/add_product.html", {"name": name})
 
+@never_cache_custom
+@user_login_required
 def product_detail(request, product_id):
     product = Product.objects.get(id=product_id)
     return render(request, 'seller/product_detail.html', {'product': product})
@@ -347,6 +336,8 @@ def product_list(request):
 
     return render(request, "seller/product_list.html", {"products": products, "name": name})
 
+@never_cache_custom
+@user_login_required
 def delete_product(request, product_id):
     if request.session.get("user_role") != UserRole.SELLER_OWNER:
         messages.error(request, "You do not have permission to perform this action.")
@@ -364,6 +355,8 @@ def delete_product(request, product_id):
     messages.success(request, "Product deleted successfully.")
     return redirect(reverse("product_list"))
 
+@never_cache_custom
+@user_login_required
 def update_product(request, product_id):
     if request.session.get("user_role") != UserRole.SELLER_OWNER:
         return HttpResponseForbidden("You do not have permission to perform this action.")
@@ -413,11 +406,13 @@ def update_product(request, product_id):
     return render(request, "seller/update_product.html", {"product": product, "name": name})
 
 @never_cache_custom
+@user_login_required
 def shop_view(request):
     products = Product.objects.all()
     return render(request, "product_details/shop.html", {"products": products})
 
 @never_cache_custom
+@user_login_required
 def contact(request):
     if request.method == "POST":
         name = request.POST.get("name", "").strip()
@@ -433,6 +428,7 @@ def contact(request):
     return render(request, "product_details/contact.html")
 
 @never_cache_custom
+@user_login_required
 def about_view(request):
     about = About.objects.first()
     return render(request, "product_details/about.html", {"about": about})
@@ -659,6 +655,8 @@ def my_orders_view(request):
     else:
         raise PermissionDenied("You do not have permission to view this page.")
 
+@never_cache_custom
+@user_login_required
 def view_orders(request):
     today = date.today()
     two_days_from_today = today + timedelta(days=2)
