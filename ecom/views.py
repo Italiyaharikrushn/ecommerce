@@ -1,24 +1,19 @@
 from .models import ( Product, User, Contact, About, CartItem, Cart, Order, OrderItem, BillingAddress, Payment, UserRole, ShippingAddress, BankDetails)
+import json
+from io import BytesIO
+from datetime import date, datetime, timedelta
 from django.shortcuts import render, redirect
-from django.http import JsonResponse, HttpResponse, HttpResponseForbidden, HttpResponseNotAllowed
-from django.shortcuts import render, redirect
-from .models import ( Product, User, Contact, About, CartItem, Cart, Order, OrderItem, BillingAddress, Payment, UserRole, ShippingAddress, BankDetails)
-from django.http import JsonResponse, HttpResponse, HttpResponseForbidden, HttpResponseNotAllowed
+from django.http import (JsonResponse, HttpResponse, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseRedirect)
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.template.loader import get_template
 from django.urls import reverse
 from django.db import transaction, IntegrityError
+from django.db.models import Prefetch, Q, Count, F, Min
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.contrib.auth.hashers import make_password, check_password
-from xhtml2pdf import pisa
-from io import BytesIO
-import json
-from datetime import datetime, date, timedelta
-from django.db.models import Prefetch, Q, Count, F, Min
-from django.http import HttpResponseRedirect
 from django.utils.timezone import now
-
+from xhtml2pdf import pisa
 from .utils import never_cache_custom, user, user_login_required, check_user_exists
 
 def notify_sellers(order):
@@ -166,6 +161,7 @@ def login_seller(request):
 def login_admin(request):
     return handle_login(request, UserRole.ADMIN, "admins/login.html", "admin_dashboard")
 
+# Function to log out users and redirect them to the appropriate page
 def logout(request):
     user_role = request.session.pop("user_role", None)
     request.session.flush()
@@ -179,6 +175,7 @@ def logout(request):
 
     return redirect("home_view")
 
+# Function to display the home page based on user role
 @never_cache_custom
 def home_view(request):
     user_role = request.session.get("user_role")
@@ -192,6 +189,7 @@ def home_view(request):
         return redirect("admin_dashboard")
     return render(request, "product_details/index.html")
 
+# Function to display the seller's dashboard with their products and orders
 @never_cache_custom
 @user_login_required(allowed_roles=["seller_owner"])
 def seller_dashboard(request):
@@ -216,11 +214,13 @@ def seller_dashboard(request):
 
     return render(request, "seller/dashboard.html", {"name": seller.name, "products": seller_products, "orders": seller_orders.values()})
 
+# Function to display the customer dashboard
 @never_cache_custom
 @user_login_required(allowed_roles=["ROLE_CUSTOMER"])
 def customer_dashboard(request):
     return render(request, "product_details/index.html")
 
+# Function to display the admin dashboard with order statistics
 @never_cache_custom
 @user_login_required(allowed_roles=["ROLE_ADMIN"])
 def admin_dashboard(request):
@@ -239,6 +239,7 @@ def admin_dashboard(request):
     
     return render(request, "admins/dashboard.html", context)
 
+# Function to add a new product by a seller
 @never_cache_custom
 @user_login_required
 def add_product(request):
@@ -305,12 +306,14 @@ def add_product(request):
 
     return render(request, "seller/add_product.html", {"name": name})
 
+# Function to display product details
 @never_cache_custom
 @user_login_required
 def product_detail(request, product_id):
     product = Product.objects.get(id=product_id)
     return render(request, 'seller/product_detail.html', {'product': product})
 
+# Function to display the list of products based on user role
 @never_cache_custom
 @user_login_required
 def product_list(request):
@@ -336,6 +339,7 @@ def product_list(request):
 
     return render(request, "seller/product_list.html", {"products": products, "name": name})
 
+# Function to delete a product by a seller
 @never_cache_custom
 @user_login_required
 def delete_product(request, product_id):
@@ -355,6 +359,7 @@ def delete_product(request, product_id):
     messages.success(request, "Product deleted successfully.")
     return redirect(reverse("product_list"))
 
+# Function to update product details
 @never_cache_custom
 @user_login_required
 def update_product(request, product_id):
@@ -405,12 +410,14 @@ def update_product(request, product_id):
 
     return render(request, "seller/update_product.html", {"product": product, "name": name})
 
+# Function to display the shop view
 @never_cache_custom
 @user_login_required
 def shop_view(request):
     products = Product.objects.all()
     return render(request, "product_details/shop.html", {"products": products})
 
+# Contact Form Submission
 @never_cache_custom
 @user_login_required
 def contact(request):
@@ -427,12 +434,14 @@ def contact(request):
 
     return render(request, "product_details/contact.html")
 
+# About Page View
 @never_cache_custom
 @user_login_required
 def about_view(request):
     about = About.objects.first()
     return render(request, "product_details/about.html", {"about": about})
 
+# Retrieve Cart Details
 @never_cache_custom
 @user_login_required
 def get_cart(request):
@@ -447,6 +456,7 @@ def get_cart(request):
 
     return render(request,"product_details/cart.html",{"cart": cart,"cart_items": cart_items,"total_price": total_price,},)
 
+# Add Product to Cart
 @never_cache_custom
 @user_login_required
 def add_to_cart(request):
@@ -464,6 +474,7 @@ def add_to_cart(request):
 
     return redirect("shop_view")
 
+# Update Cart Item Quantity
 @never_cache_custom
 @user_login_required
 def update_cart(request):
@@ -484,6 +495,7 @@ def update_cart(request):
 
     return HttpResponseNotAllowed(["POST"])
 
+# Remove Item from Cart
 @never_cache_custom
 @user_login_required
 def remove_cart(request):
@@ -492,14 +504,15 @@ def remove_cart(request):
         CartItem.objects.filter(id=item_id).delete()
     return redirect("cart_view")
 
+# Checkout Process
 @never_cache_custom
 @user_login_required
 def checkout(request):
     user_id = request.session.get("user_id")
     
-    if not user_id:
-        messages.error(request, "You need to be logged in to proceed.")
-        return redirect("login")
+    # if not user_id:
+    #     messages.error(request, "You need to be logged in to proceed.")
+    #     return redirect("login")
 
     cart = Cart.objects.filter(user_id=user_id).first()
 
@@ -559,6 +572,7 @@ def checkout(request):
         "total_price": cart.total_price(),
     })
 
+# Handles payment processing for an order
 @never_cache_custom
 @user_login_required
 def payment_view(request, order_id):
@@ -579,6 +593,7 @@ def payment_view(request, order_id):
 
     return render(request, "product_details/payment.html", {"order": order})
 
+# Displays order success page after payment completion
 @never_cache_custom
 @user_login_required
 def order_success(request, order_id):
@@ -589,12 +604,14 @@ def order_success(request, order_id):
 
     return render(request,"product_details/thankyou.html",{"order": order, "seller": order.order_items.first().product.seller},)
 
+# Retrieves and displays all orders for the seller
 @never_cache_custom
 @user_login_required
 def seller_orders(request):
     orders = Order.objects.all()
     return render(request, 'seller/order.html', {'orders': orders})
 
+# Retrieves and displays orders for the logged-in user based on their role (customer or seller)
 @never_cache_custom
 @user_login_required
 def my_orders_view(request):
@@ -655,6 +672,7 @@ def my_orders_view(request):
     else:
         raise PermissionDenied("You do not have permission to view this page.")
 
+# Retrieves and manages order-related data for a seller owner
 @never_cache_custom
 @user_login_required
 def view_orders(request):
@@ -708,6 +726,7 @@ def view_orders(request):
 
     return render(request,"seller/order.html",{"name": seller.name,"orders": orders_dict.values(),"today": today,"two_days_from_today": two_days_from_today,"status_counts": all_statuses,},)
 
+# Marks an order item as shipped if its status is 'ready_to_ship'.
 def mark_as_shipped(request, item_id):
     order_item = OrderItem.objects.get(id=item_id)
 
@@ -720,6 +739,7 @@ def mark_as_shipped(request, item_id):
 
     return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/"))
 
+# Updates order items with status 'shipped' to 'delivered' if their delivery date is today.
 def update_order_status():
     today = now().date()
     
@@ -730,6 +750,7 @@ def update_order_status():
         item.status = "delivered"
         item.save()
 
+# Marks an order item as 'Returned' if its status is 'Delivered'.
 def return_order_item(request, item_id):
     order_item = OrderItem.objects.get(id=item_id)
 
@@ -742,6 +763,8 @@ def return_order_item(request, item_id):
 
     return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/"))
 
+# Handles order item cancellation by customer, seller, or admin.
+@transaction.atomic
 def cancel_order_item(request, item_id):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
@@ -749,22 +772,14 @@ def cancel_order_item(request, item_id):
 
     user_id = request.session.get("user_id")
     user_role = request.session.get("user_role")
-
     order_item = OrderItem.objects.get(id=item_id)
     order = order_item.order
 
-    if user_role == UserRole.CUSTOMER:
-        if order.user.id != user_id:
-            raise PermissionDenied("You are not authorized to cancel this order.")
-    
-    elif user_role == UserRole.SELLER_OWNER:
-        if order_item.product.seller.id != user_id:
-            raise PermissionDenied("You are not authorized to cancel this order item.")
-
-    elif user_role == UserRole.ADMIN:
-        pass
-
-    else:
+    if user_role == UserRole.CUSTOMER and order.user.id != user_id:
+        raise PermissionDenied("You are not authorized to cancel this order.")
+    elif user_role == UserRole.SELLER_OWNER and order_item.product.seller.id != user_id:
+        raise PermissionDenied("You are not authorized to cancel this order item.")
+    elif user_role not in [UserRole.CUSTOMER, UserRole.SELLER_OWNER, UserRole.ADMIN]:
         raise PermissionDenied("You do not have permission to cancel orders.")
 
     try:
@@ -776,28 +791,82 @@ def cancel_order_item(request, item_id):
             order_item.save()
 
             remaining_items = order.order_items.exclude(status="cancelled")
-
-            if remaining_items.exists():
-                statuses = set(item.status for item in remaining_items)
-
-                if statuses == {"ready_to_ship"}:
-                    order.status = "Processing"
-                elif statuses == {"pending"}:
-                    order.status = "Pending"
-                else:
-                    order.status = "Partially Processed"
+            statuses = {item.status for item in remaining_items}
+            
+            if statuses == {"ready_to_ship"}:
+                order.status = "Processing"
+            elif statuses == {"pending"}:
+                order.status = "Pending"
             else:
+                order.status = "Partially Processed"
+            
+            if not remaining_items.exists():
                 order.status = "Cancelled"
 
             order.save()
-
             messages.success(request, f"Order item '{order_item.product.product_name}' has been cancelled.")
-
     except Exception as e:
         messages.error(request, f"An error occurred while cancelling the order item: {str(e)}")
 
     return redirect("view_orders")
 
+# def cancel_order_item(request, item_id):
+#     if request.method != "POST":
+#         messages.error(request, "Invalid request method.")
+#         return redirect("view_orders")
+
+#     user_id = request.session.get("user_id")
+#     user_role = request.session.get("user_role")
+
+#     order_item = OrderItem.objects.get(id=item_id)
+#     order = order_item.order
+
+#     if user_role == UserRole.CUSTOMER:
+#         if order.user.id != user_id:
+#             raise PermissionDenied("You are not authorized to cancel this order.")
+    
+#     elif user_role == UserRole.SELLER_OWNER:
+#         if order_item.product.seller.id != user_id:
+#             raise PermissionDenied("You are not authorized to cancel this order item.")
+
+#     elif user_role == UserRole.ADMIN:
+#         pass
+
+#     else:
+#         raise PermissionDenied("You do not have permission to cancel orders.")
+
+#     try:
+#         with transaction.atomic():
+#             order.total_price -= order_item.total_price()
+#             order.total_price = max(order.total_price, 0)
+
+#             order_item.status = "cancelled"
+#             order_item.save()
+
+#             remaining_items = order.order_items.exclude(status="cancelled")
+
+#             if remaining_items.exists():
+#                 statuses = set(item.status for item in remaining_items)
+
+#                 if statuses == {"ready_to_ship"}:
+#                     order.status = "Processing"
+#                 elif statuses == {"pending"}:
+#                     order.status = "Pending"
+#                 else:
+#                     order.status = "Partially Processed"
+#             else:
+#                 order.status = "Cancelled"
+
+#             order.save()
+
+#             messages.success(request, f"Order item '{order_item.product.product_name}' has been cancelled.")
+
+#     except Exception as e:
+#         messages.error(request, f"An error occurred while cancelling the order item: {str(e)}")
+
+#     return redirect("view_orders")
+
+# Allows a customer to cancel their order if it's not already completed or cancelled.
 def customer_cancel_order(request, order_id):
     if request.method == "POST":
         user_id = request.session.get("user_id")
@@ -814,6 +883,7 @@ def customer_cancel_order(request, order_id):
 
         return redirect("my_orders")
 
+# Allows a seller to accept an order item and update its status to 'ready_to_ship'.
 def accept_order(request, item_id):
     if request.method == "POST":
         user_id = request.session.get("user_id")
@@ -850,6 +920,7 @@ def accept_order(request, item_id):
 
         return redirect("view_orders")
  
+# Generates a PDF invoice for a given order.
 def generate_invoice(request, order_id):
     try:
         order = Order.objects.get(id=order_id)
@@ -906,6 +977,7 @@ def generate_invoice(request, order_id):
     except Order.DoesNotExist:
         return HttpResponse('Order not found', status=404)
 
+# Fetches all users except admins and renders the user data table.
 def table_data(request):
     users = User.objects.exclude(role="ROLE_ADMIN")
     context = {
@@ -913,6 +985,7 @@ def table_data(request):
     }
     return render(request, "admins/tables-data.html", context)
 
+# Retrieves all products and renders the product data table.
 def general_data(request):
     products = Product.objects.all()
     context = {
@@ -920,6 +993,7 @@ def general_data(request):
     }
     return render(request, "admins/tables-general.html", context)
 
+# Fetches all orders and renders the order management page.
 def order(request):
     orders = Order.objects.all()
     context = {
@@ -927,6 +1001,7 @@ def order(request):
     }
     return render(request, "admins/orders.html", context)
 
+# Fetches recent orders placed by the logged-in user and renders the sales page.
 def recent_sales(request):
     customer_orders = OrderItem.objects.filter(order__user=request.user).select_related("product", "order")
 
@@ -935,6 +1010,7 @@ def recent_sales(request):
     }
     return render(request, "recent_sales.html", context)
 
+# Generates user distribution data by role and country for a chart.
 def user_chart(request):
     countries = User.objects.values_list("country", flat=True).distinct()
     
@@ -967,6 +1043,7 @@ def user_chart(request):
 
     return JsonResponse(data)
 
+# Generates order status distribution data for a chart.
 def order_status_chart(request):
     status_counts = OrderItem.objects.values("status").annotate(count=Count("id"))
 
@@ -974,6 +1051,7 @@ def order_status_chart(request):
 
     return JsonResponse(data)
 
+# Generates order count data for the last 30 days for a chart.
 def order_chart(request):
     today = datetime.today().date()
     last_30_days = [today - timedelta(days=i) for i in range(29, -1, -1)]
@@ -990,5 +1068,6 @@ def order_chart(request):
 
     return JsonResponse({"labels": labels, "values": values})
 
+# Renders the dashboard page for the seller with order statistics.
 def order_chart_page(request):
     return render(request, "seller/dashboard.html")
