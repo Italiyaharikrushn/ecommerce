@@ -338,6 +338,15 @@
                       {% else %}
                           <span class="badge bg-secondary">{{ item.status }}</span>
                       {% endif %}
+                  
+                      {% if item.status == "shipped" %}
+                          <form action="{% url 'mark_as_delivered' item.id %}" method="POST" class="d-inline">
+                              {% csrf_token %}
+                              <button class="btn btn-success btn-sm">Delivered</button>
+                          </form>
+                      {% else %}
+                          <span class="badge bg-secondary">{{ item.status }}</span>
+                      {% endif %}
                   </td>
                   </tr>
                   {% empty %}

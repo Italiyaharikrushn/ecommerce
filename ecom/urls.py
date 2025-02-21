@@ -46,6 +46,7 @@ urlpatterns = [
 
     # Order Management (Seller & Customer)
     path("order/shipped/<int:item_id>/", views.mark_as_shipped, name="mark_as_shipped"),
+    path("order-item/<int:item_id>/delivered/", views.mark_as_delivered, name="mark_as_delivered"),
     path("orders/cancel/<int:item_id>/", views.cancel_order_item, name="cancel_order_item"),
     path("order-success/<int:order_id>/", views.order_success, name="order_success"),
     path("orders/accept/<int:item_id>/", views.accept_order, name="accept_order"),

@@ -61,12 +61,10 @@ def register_user(request, role, template, redirect_url):
     return render(request, template)
 
 @never_cache_custom
-@user
 def register_customer(request):
     return register_user(request, UserRole.CUSTOMER, "product_details/register.html", "login")
 
 @never_cache_custom
-@user
 def register_seller(request):
     """Register a new seller with business details."""
     if request.method == 'POST':
@@ -109,15 +107,12 @@ def register_seller(request):
     return render(request, 'seller/register.html')
 
 @never_cache_custom
-@user
 def register_admin(request):
     """Register an admin user."""
     return register_user(request, UserRole.ADMIN, "admins/register.html", "login_admin")
 
 def handle_login(request, role, template, redirect_url):
-    """Handles login functionality for different user roles."""
-
-    if request.session.get("user_id"):  # ✅ Prevent logged-in users from accessing login page
+    if request.session.get("user_id"):
         return redirect(redirect_url)
 
     if request.method == "POST":
@@ -241,7 +236,6 @@ def admin_dashboard(request):
 
 # Function to add a new product by a seller
 @never_cache_custom
-@user_login_required
 def add_product(request):
     if request.session.get("user_role") != UserRole.SELLER_OWNER:
         return redirect("login_seller")
@@ -308,14 +302,12 @@ def add_product(request):
 
 # Function to display product details
 @never_cache_custom
-@user_login_required
 def product_detail(request, product_id):
     product = Product.objects.get(id=product_id)
     return render(request, 'seller/product_detail.html', {'product': product})
 
 # Function to display the list of products based on user role
 @never_cache_custom
-@user_login_required
 def product_list(request):
     user_role = request.session.get("user_role")
     user_id = request.session.get("user_id")
@@ -341,7 +333,6 @@ def product_list(request):
 
 # Function to delete a product by a seller
 @never_cache_custom
-@user_login_required
 def delete_product(request, product_id):
     if request.session.get("user_role") != UserRole.SELLER_OWNER:
         messages.error(request, "You do not have permission to perform this action.")
@@ -361,7 +352,6 @@ def delete_product(request, product_id):
 
 # Function to update product details
 @never_cache_custom
-@user_login_required
 def update_product(request, product_id):
     if request.session.get("user_role") != UserRole.SELLER_OWNER:
         return HttpResponseForbidden("You do not have permission to perform this action.")
@@ -412,14 +402,12 @@ def update_product(request, product_id):
 
 # Function to display the shop view
 @never_cache_custom
-@user_login_required
 def shop_view(request):
     products = Product.objects.all()
     return render(request, "product_details/shop.html", {"products": products})
 
 # Contact Form Submission
 @never_cache_custom
-@user_login_required
 def contact(request):
     if request.method == "POST":
         name = request.POST.get("name", "").strip()
@@ -436,14 +424,12 @@ def contact(request):
 
 # About Page View
 @never_cache_custom
-@user_login_required
 def about_view(request):
     about = About.objects.first()
     return render(request, "product_details/about.html", {"about": about})
 
 # Retrieve Cart Details
 @never_cache_custom
-@user_login_required
 def get_cart(request):
     user_id = request.session.get("user_id")
     cart = Cart.objects.filter(user_id=user_id).first()
@@ -458,7 +444,6 @@ def get_cart(request):
 
 # Add Product to Cart
 @never_cache_custom
-@user_login_required
 def add_to_cart(request):
     if request.method == "POST":
         user_id = request.session["user_id"]
@@ -476,7 +461,6 @@ def add_to_cart(request):
 
 # Update Cart Item Quantity
 @never_cache_custom
-@user_login_required
 def update_cart(request):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -497,7 +481,6 @@ def update_cart(request):
 
 # Remove Item from Cart
 @never_cache_custom
-@user_login_required
 def remove_cart(request):
     if request.method == "POST":
         item_id = request.POST.get("item_id")
@@ -506,7 +489,6 @@ def remove_cart(request):
 
 # Checkout Process
 @never_cache_custom
-@user_login_required
 def checkout(request):
     user_id = request.session.get("user_id")
     
@@ -574,7 +556,6 @@ def checkout(request):
 
 # Handles payment processing for an order
 @never_cache_custom
-@user_login_required
 def payment_view(request, order_id):
     try:
         order = Order.objects.get(id=order_id)
@@ -595,7 +576,6 @@ def payment_view(request, order_id):
 
 # Displays order success page after payment completion
 @never_cache_custom
-@user_login_required
 def order_success(request, order_id):
     try:
         order = Order.objects.prefetch_related("order_items__product__seller").get(id=order_id)
@@ -606,14 +586,12 @@ def order_success(request, order_id):
 
 # Retrieves and displays all orders for the seller
 @never_cache_custom
-@user_login_required
 def seller_orders(request):
     orders = Order.objects.all()
     return render(request, 'seller/order.html', {'orders': orders})
 
 # Retrieves and displays orders for the logged-in user based on their role (customer or seller)
 @never_cache_custom
-@user_login_required
 def my_orders_view(request):
     user_role = request.session.get("user_role")
     user_id = request.session.get("user_id")
@@ -674,7 +652,6 @@ def my_orders_view(request):
 
 # Retrieves and manages order-related data for a seller owner
 @never_cache_custom
-@user_login_required
 def view_orders(request):
     today = date.today()
     two_days_from_today = today + timedelta(days=2)
@@ -690,8 +667,6 @@ def view_orders(request):
     OrderItem.objects.filter(status="shipped", delivery_date=today).update(status="delivered")
 
     order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related("order", "product")
-
-    # status_counts = dict(OrderItem.objects.filter(product__seller_id=user_id).values("status").annotate(count=Count("id")))
     statuses = list(OrderItem.objects.filter(product__seller_id=user_id).values("status").annotate(count=Count("status")))
     
     all_statuses = {"onhold": 0, "pending": 0, "ready_to_ship": 0, "shipped": 0, "return_requested": 0, "returned": 0}
@@ -699,20 +674,16 @@ def view_orders(request):
         all_statuses[status["status"].lower()] = status["count"]
 
     orders_dict = {}
-
     for item in order_items:
         order_id = item.order.id
 
         if order_id not in orders_dict:
-            orders_dict[order_id] = {"order": item.order,"items": [],"total_price": 0,"order_date": None,}
+            orders_dict[order_id] = {"order": item.order, "items": [], "total_price": 0, "order_date": None}
 
         orders_dict[order_id]["items"].append(item)
         orders_dict[order_id]["total_price"] += item.product.price * item.quantity
 
-    order_dates = OrderItem.objects.filter(order_id__in=orders_dict.keys()).values("order_id").annotate(
-        order_date=Min("order_date")
-    )
-
+    order_dates = OrderItem.objects.filter(order_id__in=orders_dict.keys()).values("order_id").annotate(order_date=Min("order_date"))
     for entry in order_dates:
         if entry["order_id"] in orders_dict:
             orders_dict[entry["order_id"]]["order_date"] = entry["order_date"]
@@ -724,7 +695,7 @@ def view_orders(request):
             elif two_days_from_today >= item.dispatch_date:
                 messages.warning(request, f"Order item '{item.product.product_name}' is nearing the dispatch date!")
 
-    return render(request,"seller/order.html",{"name": seller.name,"orders": orders_dict.values(),"today": today,"two_days_from_today": two_days_from_today,"status_counts": all_statuses,},)
+    return render(request, "seller/order.html",{"name": seller.name,"orders": orders_dict.values(),"today": today,"two_days_from_today": two_days_from_today,"status_counts": all_statuses,})
 
 # Marks an order item as shipped if its status is 'ready_to_ship'.
 def mark_as_shipped(request, item_id):
@@ -732,23 +703,76 @@ def mark_as_shipped(request, item_id):
 
     if order_item.status == "ready_to_ship":
         order_item.status = "shipped"
+        order_item.dispatch_date = now().date()
         order_item.save()
+
+        order = order_item.order
+        if all(item.status == "shipped" for item in order.order_items.all()):
+            order.status = "Shipped"
+            order.save()
+
         messages.success(request, f"Order item '{order_item.product.product_name}' has been marked as shipped.")
     else:
         messages.warning(request, "This order item cannot be shipped.")
 
     return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/"))
 
+def mark_as_delivered(request, item_id):
+    order_item = OrderItem.objects.get(id=item_id)
+
+    if order_item.status == "shipped":
+        old_status = order_item.status
+        order_item.status = "delivered"
+        order_item.delivery_date = now().date()
+        order_item.save()
+
+        order_item.update_product_quantity(old_status, order_item.status)
+
+        messages.success(request, f"Order item '{order_item.product.product_name}' has been marked as delivered. Stock updated.")
+
+        order = order_item.order
+        if all(item.status == "delivered" for item in order.order_items.all()):
+            order.status = "Delivered"
+            order.save()
+    else:
+        messages.warning(request, "This order item cannot be marked as delivered.")
+
+    return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/"))
+
 # Updates order items with status 'shipped' to 'delivered' if their delivery date is today.
-def update_order_status():
-    today = now().date()
-    
-    # Fetch all shipped orders where delivery date is today
-    delivered_items = OrderItem.objects.filter(status="shipped", delivery_date=today)
-    
-    for item in delivered_items:
-        item.status = "delivered"
-        item.save()
+@transaction.atomic
+def update_order_status(request, order_id):
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect("view_orders")
+
+    user_role = request.session.get("user_role")
+    order = Order.objects.get(id=order_id)
+
+    if user_role not in [UserRole.SELLER_OWNER, UserRole.ADMIN]:
+        raise PermissionDenied("You do not have permission to update order status.")
+
+    new_status = request.POST.get("status")
+
+    if new_status not in dict(Order.ORDER_STATUS_CHOICES):
+        messages.error(request, "Invalid order status.")
+        return redirect("view_orders")
+
+    try:
+        with transaction.atomic():
+            for item in order.order_items.all():
+                item.status = new_status
+                item.save()
+
+            order.status = new_status
+            order.calculate_total_price()
+            order.save()
+
+            messages.success(request, f"Order #{order.id} status updated to {new_status}.")
+    except Exception as e:
+        messages.error(request, f"An error occurred while updating the order: {str(e)}")
+
+    return redirect("view_orders")
 
 # Marks an order item as 'Returned' if its status is 'Delivered'.
 def return_order_item(request, item_id):
@@ -764,7 +788,6 @@ def return_order_item(request, item_id):
     return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/"))
 
 # Handles order item cancellation by customer, seller, or admin.
-@transaction.atomic
 def cancel_order_item(request, item_id):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
@@ -912,14 +935,13 @@ def accept_order(request, item_id):
                 order.status = "Shipped"
             elif all(status == "completed" for status in item_statuses):
                 order.status = "Completed"
-
             order.save()
 
         except OrderItem.DoesNotExist:
             raise PermissionDenied("Order item not found.")
 
         return redirect("view_orders")
- 
+
 # Generates a PDF invoice for a given order.
 def generate_invoice(request, order_id):
     try:

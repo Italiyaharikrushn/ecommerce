@@ -276,51 +276,55 @@
 
                 <h1 class="text-center mb-4">Product List</h1>
 
-                {% if products %}
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover">
-                        <thead class="table-dark text-center">
-                            <tr>
-                                <th scope="col">Image</th>
-                                <th scope="col">Product Name</th>
-                                <th scope="col">Price</th>
-                                <th scope="col">Description</th>
-                                <th scope="col">Quantity</th>
-                                <th scope="col">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for product in products %}
-                            <tr>
-                                <td class="text-center">
-                                    <img src="{{ product.image.url }}" alt="{{ product.product_name }}"
-                                        class="img-thumbnail" style="width: 50px; height: 50px;">
-                                </td>
-                                <td>{{ product.product_name }}</td>
-                                <td>₹{{ product.price }}</td>
-                                <td>
-                                    <span>{{ product.description|truncatechars:100 }}</span>
-                                    <a href="{% url 'product_detail' product.id %}" class="text-primary">View Details</a>
-                                </td>                             
-                                <td>{{ product.total_quantity }}</td>
-                                <td class="text-center">
-                                    <a href="{% url 'delete_product' product.id %}" class="text-danger me-4">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </a>
-                                    <a href="{% url 'update_product' product.id %}" class="text-success">
-                                        <i class="fa-regular fa-pen-to-square"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <div class="container mt-4">
+                    <h2 class="mb-4">Seller Dashboard - Orders & Products</h2>
+                
+                    <h3 class="mb-3">Your Products</h3>
+                    {% if products %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-dark text-center">
+                                <tr>
+                                    <th scope="col">Image</th>
+                                    <th scope="col">Product Name</th>
+                                    <th scope="col">Price</th>
+                                    <th scope="col">Description</th>
+                                    <th scope="col">Stock Quantity</th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in products %}
+                                <tr>
+                                    <td class="text-center">
+                                        <img src="{{ product.image.url }}" alt="{{ product.product_name }}" class="img-thumbnail" style="width: 50px; height: 50px;">
+                                    </td>
+                                    <td>{{ product.product_name }}</td>
+                                    <td>₹{{ product.price }}</td>
+                                    <td>
+                                        <span>{{ product.description|truncatechars:100 }}</span>
+                                        <a href="{% url 'product_detail' product.id %}" class="text-primary">View Details</a>
+                                    </td>
+                                    <td class="text-center">{{ product.total_quantity }}</td>
+                                    <td class="text-center">
+                                        <a href="{% url 'update_product' product.id %}" class="text-success me-3">
+                                            <i class="fa-regular fa-pen-to-square"></i>
+                                        </a>
+                                        <a href="{% url 'delete_product' product.id %}" class="text-danger">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning text-center mt-3">
+                        <p>No products found. <a href="{% url 'add_product' %}">Add a new product</a></p>
+                    </div>
+                    {% endif %}
                 </div>
-                {% else %}
-                <div class="text-center mt-3">
-                    <p class="text-muted">No products found.</p>
-                </div>
-                {% endif %}
 
             </main>
         </div>

@@ -1,8 +1,8 @@
 import uuid
 from django.db import models
-from django.core.validators import MinValueValidator
-from django.core.validators import MinLengthValidator
+from django.core.validators import MinValueValidator, MinLengthValidator
 from django.utils.timezone import now
+from datetime import date
 
 def get_image_upload_to(instance, filename):
     ext = filename.split(".")[-1]
@@ -103,13 +103,13 @@ class Checkout(models.Model):
 
 class Order(models.Model):
     ORDER_STATUS_CHOICES = [
-			("Pending", "Pending"),
-			("Processing", "Processing"),
-			("Shipped", "Shipped"),
-			("Delivered", "Delivered"),
-			("Cancelled", "Cancelled"),
-            ("Return", "Return"),
-		]
+        ("Pending", "Pending"),
+        ("Processing", "Processing"),
+        ("Shipped", "Shipped"),
+        ("Delivered", "Delivered"),
+        ("Cancelled", "Cancelled"),
+        ("Return", "Return"),
+    ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
     status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default="Pending")
@@ -124,28 +124,50 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     STATUS_CHOICES = [
-			("pending", "Pending"),
-			("ready_to_ship", "Ready_To_Ship"),
-			("shipped", "Shipped"),
-			("delivered", "Delivered"),
-            ("completed", "Completed"),
-			("cancelled", "Cancelled"),
-            ("return", "Return"),
-		]
+        ("pending", "Pending"),
+        ("ready_to_ship", "Ready_To_Ship"),
+        ("shipped", "Shipped"),
+        ("delivered", "Delivered"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+        ("return", "Return"),
+    ]
 
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending')
     order_date = models.DateField(auto_now_add=True)
-    dispatch_date = models.DateField(blank=True, null=True, help_text="The date the item was dispatched.")
-    delivery_date = models.DateField(blank=True, null=True, help_text="The estimated delivery date.")
-
-    def __str__(self):
-        return f"{self.quantity} x {self.product.product_name} (Order #{self.order.id})"
+    dispatch_date = models.DateField(blank=True, null=True)
+    delivery_date = models.DateField(blank=True, null=True)
 
     def total_price(self):
         return self.quantity * self.product.price
+
+    def update_product_quantity(self, old_status, new_status):
+        if old_status != "delivered" and new_status == "delivered":
+            # Ensure that stock only decreases when delivered and the quantity is correct
+            if self.product.total_quantity >= self.quantity:
+                self.product.total_quantity -= self.quantity
+                self.product.save()
+        elif old_status == "delivered" and new_status == "return":
+            # If the order item is returned, increase stock
+            self.product.total_quantity += self.quantity
+            self.product.save()
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            old_status = OrderItem.objects.get(pk=self.pk).status
+            if old_status != self.status:
+                self.update_product_quantity(old_status, self.status)
+
+        super().save(*args, **kwargs)
+
+        if self.status == "delivered":
+            order = self.order
+            if all(item.status == "delivered" for item in order.order_items.all()):
+                order.status = "Delivered"
+                order.save()
 
 class BillingAddress(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="billing_addresses", unique=True)
