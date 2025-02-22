@@ -46,7 +46,7 @@ def register_user(request, role, template, redirect_url):
                 "error": "Email already registered."
             })
 
-        User.objects.create(
+        user = User(
             name=name,
             email=email,
             phone=phone,
@@ -55,10 +55,10 @@ def register_user(request, role, template, redirect_url):
             role=role,
             country=country
         )
+        user.save()
 
         messages.success(request, "Registration successful! Please log in.")
         return redirect(redirect_url)
-
     return render(request, template)
 
 @never_cache_custom
@@ -72,12 +72,10 @@ def register_seller(request):
             with transaction.atomic():
                 email = request.POST['email']
                 
-                # ✅ Check if user already exists
                 if User.objects.filter(email=email, role=UserRole.SELLER_OWNER).exists():
                     messages.error(request, "Email already registered as a seller.")
                     return render(request, 'seller/register.html', request.POST)
 
-                # ✅ Create User
                 user = User.objects.create(
                     name=request.POST['name'],
                     email=email,
@@ -88,7 +86,6 @@ def register_seller(request):
                     country=request.POST.get("country")
                 )
 
-                # ✅ Save Shipping Address
                 ShippingAddress.objects.create(
                     seller=user,
                     businessname=request.POST['business_name'],
@@ -99,7 +96,6 @@ def register_seller(request):
                     country=request.POST['country']
                 )
 
-                # ✅ Save Bank Details
                 BankDetails.objects.create(
                     seller=user,
                     BankAccountNo=request.POST['bank_account'],
@@ -727,6 +723,7 @@ def mark_as_shipped(request, item_id):
 
     return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/"))
 
+# Marks an order item as delivered if its status is 'shipped'.
 def mark_as_delivered(request, item_id):
     order_item = OrderItem.objects.get(id=item_id)
 
@@ -842,62 +839,6 @@ def cancel_order_item(request, item_id):
         messages.error(request, f"An error occurred while cancelling the order item: {str(e)}")
 
     return redirect("view_orders")
-
-# def cancel_order_item(request, item_id):
-#     if request.method != "POST":
-#         messages.error(request, "Invalid request method.")
-#         return redirect("view_orders")
-
-#     user_id = request.session.get("user_id")
-#     user_role = request.session.get("user_role")
-
-#     order_item = OrderItem.objects.get(id=item_id)
-#     order = order_item.order
-
-#     if user_role == UserRole.CUSTOMER:
-#         if order.user.id != user_id:
-#             raise PermissionDenied("You are not authorized to cancel this order.")
-    
-#     elif user_role == UserRole.SELLER_OWNER:
-#         if order_item.product.seller.id != user_id:
-#             raise PermissionDenied("You are not authorized to cancel this order item.")
-
-#     elif user_role == UserRole.ADMIN:
-#         pass
-
-#     else:
-#         raise PermissionDenied("You do not have permission to cancel orders.")
-
-#     try:
-#         with transaction.atomic():
-#             order.total_price -= order_item.total_price()
-#             order.total_price = max(order.total_price, 0)
-
-#             order_item.status = "cancelled"
-#             order_item.save()
-
-#             remaining_items = order.order_items.exclude(status="cancelled")
-
-#             if remaining_items.exists():
-#                 statuses = set(item.status for item in remaining_items)
-
-#                 if statuses == {"ready_to_ship"}:
-#                     order.status = "Processing"
-#                 elif statuses == {"pending"}:
-#                     order.status = "Pending"
-#                 else:
-#                     order.status = "Partially Processed"
-#             else:
-#                 order.status = "Cancelled"
-
-#             order.save()
-
-#             messages.success(request, f"Order item '{order_item.product.product_name}' has been cancelled.")
-
-#     except Exception as e:
-#         messages.error(request, f"An error occurred while cancelling the order item: {str(e)}")
-
-#     return redirect("view_orders")
 
 # Allows a customer to cancel their order if it's not already completed or cancelled.
 def customer_cancel_order(request, order_id):
@@ -1088,7 +1029,9 @@ def order_chart(request):
     today = datetime.today().date()
     last_30_days = [today - timedelta(days=i) for i in range(29, -1, -1)]
 
-    data = OrderItem.objects.filter(order_date__gte=today - timedelta(days=15)) \
+    user_id = request.session.get("user_id")
+
+    data = OrderItem.objects.filter(order_date__gte=today - timedelta(days=30), product__seller_id=user_id) \
                             .values("order_date") \
                             .annotate(order_count=Count("id")) \
                             .order_by("order_date")
