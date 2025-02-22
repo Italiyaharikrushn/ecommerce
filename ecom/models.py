@@ -168,7 +168,7 @@ class OrderItem(models.Model):
                 order.save()
 
 class BillingAddress(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="billing_addresses", unique=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="billing_address")
     order = models.OneToOneField("Order", on_delete=models.SET_NULL, related_name="billing_address", null=True, blank=True)
 
     # Billing Address
