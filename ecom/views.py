@@ -32,17 +32,17 @@ def notify_sellers(order):
         send_mail(subject=email_subject,message=email_body,from_email="no-reply@example.com",recipient_list=[seller.email],)
 
 def register_user(request, role, template, redirect_url):
-    """Generic function to register users (Customer & Admin)."""
     if request.method == "POST":
         name = request.POST.get("name")
         email = request.POST.get("email")
         phone = request.POST.get("phone")
         password = request.POST.get("password")
         gender = request.POST.get("gender")
+        country = request.POST.get("country")
 
         if User.objects.filter(email=email, role=role).exists():
             return render(request, template, {
-                "name": name, "phone": phone, "gender": gender, 
+                "name": name, "phone": phone, "gender": gender,  "country": country,
                 "error": "Email already registered."
             })
 
@@ -52,7 +52,8 @@ def register_user(request, role, template, redirect_url):
             phone=phone,
             password=make_password(password),
             gender=gender,
-            role=role
+            role=role,
+            country=country
         )
 
         messages.success(request, "Registration successful! Please log in.")
@@ -66,19 +67,28 @@ def register_customer(request):
 
 @never_cache_custom
 def register_seller(request):
-    """Register a new seller with business details."""
     if request.method == 'POST':
         try:
             with transaction.atomic():
+                email = request.POST['email']
+                
+                # ✅ Check if user already exists
+                if User.objects.filter(email=email, role=UserRole.SELLER_OWNER).exists():
+                    messages.error(request, "Email already registered as a seller.")
+                    return render(request, 'seller/register.html', request.POST)
+
+                # ✅ Create User
                 user = User.objects.create(
                     name=request.POST['name'],
-                    email=request.POST['email'],
+                    email=email,
                     phone=request.POST['phone'],
                     password=make_password(request.POST['password']),
                     gender=request.POST.get("gender"),
-                    role=UserRole.SELLER_OWNER
+                    role=UserRole.SELLER_OWNER,
+                    country=request.POST.get("country")
                 )
 
+                # ✅ Save Shipping Address
                 ShippingAddress.objects.create(
                     seller=user,
                     businessname=request.POST['business_name'],
@@ -89,6 +99,7 @@ def register_seller(request):
                     country=request.POST['country']
                 )
 
+                # ✅ Save Bank Details
                 BankDetails.objects.create(
                     seller=user,
                     BankAccountNo=request.POST['bank_account'],
@@ -108,7 +119,6 @@ def register_seller(request):
 
 @never_cache_custom
 def register_admin(request):
-    """Register an admin user."""
     return register_user(request, UserRole.ADMIN, "admins/register.html", "login_admin")
 
 def handle_login(request, role, template, redirect_url):
@@ -726,7 +736,7 @@ def mark_as_delivered(request, item_id):
         order_item.delivery_date = now().date()
         order_item.save()
 
-        order_item.update_product_quantity(old_status, order_item.status)
+        # order_item.update_product_quantity(old_status, order_item.status)
 
         messages.success(request, f"Order item '{order_item.product.product_name}' has been marked as delivered. Stock updated.")
 

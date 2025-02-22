@@ -146,12 +146,10 @@ class OrderItem(models.Model):
 
     def update_product_quantity(self, old_status, new_status):
         if old_status != "delivered" and new_status == "delivered":
-            # Ensure that stock only decreases when delivered and the quantity is correct
             if self.product.total_quantity >= self.quantity:
                 self.product.total_quantity -= self.quantity
                 self.product.save()
         elif old_status == "delivered" and new_status == "return":
-            # If the order item is returned, increase stock
             self.product.total_quantity += self.quantity
             self.product.save()
 
