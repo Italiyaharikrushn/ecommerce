@@ -14,7 +14,7 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.contrib.auth.hashers import make_password, check_password
 from django.utils.timezone import now
 from xhtml2pdf import pisa
-from .utils import never_cache_custom, user, user_login_required, check_user_exists
+from .utils import never_cache_custom, user, user_login_required
 
 def notify_sellers(order):
     seller_orders = {}
@@ -46,15 +46,7 @@ def register_user(request, role, template, redirect_url):
                 "error": "Email already registered."
             })
 
-        user = User(
-            name=name,
-            email=email,
-            phone=phone,
-            password=make_password(password),
-            gender=gender,
-            role=role,
-            country=country
-        )
+        user = User( name=name, email=email, phone=phone, password=make_password(password), gender=gender, role=role, country=country )
         user.save()
 
         messages.success(request, "Registration successful! Please log in.")
@@ -136,11 +128,7 @@ def handle_login(request, role, template, redirect_url):
             return render(request, template)
 
         if check_password(password, user.password):
-            request.session.update({
-                "user_id": user.id,
-                "user_name": user.name,
-                "user_role": user.role,
-            })
+            request.session.update({ "user_id": user.id, "user_name": user.name, "user_role": user.role, })
             return redirect(redirect_url)
 
         messages.error(request, "Incorrect password.")
@@ -231,12 +219,7 @@ def admin_dashboard(request):
     today_orders = OrderItem.objects.filter(order_date=today).count()
     completed_orders = Order.objects.filter(status="Delivered").count()
 
-    context = {
-        "total_orders": total_orders,
-        "today_orders": today_orders,
-        "completed_orders": completed_orders,
-        "customer_orders": customer_orders
-    }
+    context = { "total_orders": total_orders, "today_orders": today_orders, "completed_orders": completed_orders, "customer_orders": customer_orders }
     
     return render(request, "admins/dashboard.html", context)
 
@@ -276,14 +259,7 @@ def add_product(request):
             if total_quantity < 0:
                 raise ValueError("Total quantity must be positive.")
 
-            Product.objects.create(
-                product_name=product_name,
-                description=description,
-                price=price,
-                total_quantity=total_quantity,
-                image=image,
-                seller=seller,
-            )
+            Product.objects.create(product_name=product_name,description=description,price=price,total_quantity=total_quantity,image=image,seller=seller,)
             return redirect("product_list")
 
         except ValueError as e:
@@ -497,11 +473,6 @@ def remove_cart(request):
 @never_cache_custom
 def checkout(request):
     user_id = request.session.get("user_id")
-    
-    # if not user_id:
-    #     messages.error(request, "You need to be logged in to proceed.")
-    #     return redirect("login")
-
     cart = Cart.objects.filter(user_id=user_id).first()
 
     if not cart or not cart.cart_items.exists():
@@ -512,10 +483,8 @@ def checkout(request):
 
     if request.method == "POST":
         billing_fields = [
-            "billing_fullname", "billing_address", "billing_city", "billing_state",
-            "billing_pincode", "billing_country", "billing_contact_number",
-            "shipping_fullname", "shipping_address", "shipping_city", "shipping_state",
-            "shipping_pincode", "shipping_country", "shipping_contact_number"
+            "billing_fullname", "billing_address", "billing_city", "billing_state", "billing_pincode", "billing_country", "billing_contact_number",
+            "shipping_fullname", "shipping_address", "shipping_city", "shipping_state", "shipping_pincode", "shipping_country", "shipping_contact_number"
         ]
 
         for field in billing_fields:
@@ -534,13 +503,7 @@ def checkout(request):
                 delivery_date = dispatch_date + timedelta(days=5)
 
                 order_items = [
-                    OrderItem(
-                        order=order,
-                        product=item.product,
-                        quantity=item.quantity,
-                        dispatch_date=dispatch_date,
-                        delivery_date=delivery_date,
-                    ) for item in cart.cart_items.all()
+                    OrderItem( order=order, product=item.product, quantity=item.quantity, dispatch_date=dispatch_date, delivery_date=delivery_date, ) for item in cart.cart_items.all()
                 ]
                 OrderItem.objects.bulk_create(order_items)
 
@@ -554,11 +517,7 @@ def checkout(request):
             messages.error(request, f"An error occurred during checkout: {e}")
             return redirect("checkout")
 
-    return render(request, "product_details/checkout.html", {
-        "cart": cart,
-        "billing_address": billing_address,
-        "total_price": cart.total_price(),
-    })
+    return render(request, "product_details/checkout.html", { "cart": cart, "billing_address": billing_address, "total_price": cart.total_price(), })
 
 # Handles payment processing for an order
 @never_cache_custom
@@ -621,11 +580,7 @@ def my_orders_view(request):
                     seller_orders[seller] = []
 
                 if order.id not in seller_items:
-                    seller_items[order.id] = {
-                        "order": order,
-                        "items": [],
-                        "total_price": 0,
-                    }
+                    seller_items[order.id] = { "order": order, "items": [], "total_price": 0, }
 
                 seller_items[order.id]["items"].append(item)
                 seller_items[order.id]["total_price"] += item.product.price * item.quantity
@@ -642,11 +597,7 @@ def my_orders_view(request):
         for item in orders:
             order_id = item.order.id
             if order_id not in seller_orders:
-                seller_orders[order_id] = {
-                    "order": item.order,
-                    "items": [],
-                    "total_price": 0,
-                }
+                seller_orders[order_id] = { "order": item.order, "items": [], "total_price": 0, }
 
             seller_orders[order_id]["items"].append(item)
             seller_orders[order_id]["total_price"] += item.product.price * item.quantity
@@ -733,7 +684,7 @@ def mark_as_delivered(request, item_id):
         order_item.delivery_date = now().date()
         order_item.save()
 
-        # order_item.update_product_quantity(old_status, order_item.status)
+        order_item.update_product_quantity(old_status, order_item.status)
 
         messages.success(request, f"Order item '{order_item.product.product_name}' has been marked as delivered. Stock updated.")
 
@@ -908,34 +859,12 @@ def generate_invoice(request, order_id):
             existing_billing_address = BillingAddress.objects.filter(user=order.user).first()
             if existing_billing_address:
                 billing_address = existing_billing_address
-            else:
-                billing_address = BillingAddress.objects.create(
-                    user=order.user,
-                    order=order,
-                    billing_fullname=order.user.name,
-                    billing_address="Default Billing Address",
-                    billing_city="Default City",
-                    billing_state="Default State",
-                    billing_pincode="000000",
-                    billing_country="Default Country",
-                    billing_contact_number="0000000000",
-                    shipping_fullname=order.user.name,
-                    shipping_address="Default Shipping Address",
-                    shipping_city="Default City",
-                    shipping_state="Default State",
-                    shipping_pincode="000000",
-                    shipping_country="Default Country",
-                    shipping_contact_number="0000000000",
-                )
+
         else:
             billing_address = order.billing_address
         
         template_path = 'seller/label.html'
-        context = {
-            'order': order,
-            'billing_address': billing_address,
-            'seller_address': seller_address
-        }
+        context = { 'order': order, 'billing_address': billing_address, 'seller_address': seller_address }
         
         template = get_template(template_path)
         html = template.render(context)
@@ -992,12 +921,7 @@ def user_chart(request):
         .annotate(count=Count("id"))
     )
 
-    data = {
-        "roles": ["Customer", "Seller"],
-        "countries": list(countries),
-        "customers": [],
-        "sellers": []
-    }
+    data = { "roles": ["Customer", "Seller"], "countries": list(countries), "customers": [], "sellers": [] }
 
     country_stats = {country: {"customers": 0, "sellers": 0} for country in countries}
 
