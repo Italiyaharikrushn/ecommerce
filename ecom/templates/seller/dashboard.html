@@ -289,7 +289,7 @@
                     <div class="col-md-3">
                         <div class="card">
                             <a href="#" class="card-body text-center">
-                                <h5 class="card-title">Cancelled Orders</h5>
+                                <h5 class="card-title">Low Stock</h5>
                                 <p class="card-text"><strong>{{ status_counts.cancelled }}</strong></p>
                             </a>
                         </div>
@@ -328,27 +328,41 @@
                             <div class="col-md-6">
                                 <div class="card">
                                     <a href="#" class="card-body text-center">
+                                        <h5 class="card-title">Views</h5>
+                                        <p class="card-text"><strong>0</strong></p>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <a href="#" class="card-body text-center">
                                         <h5 class="card-title">Orders</h5>
                                         <p class="card-text"><strong>0</strong></p>
                                     </a>
                                 </div>
                             </div>
+
+                            <!-- In Stock Listings -->
                             <div class="col-md-6">
                                 <div class="card">
-                                    <a href="#" class="card-body text-center">
+                                    <div class="card-body text-center">
                                         <h5 class="card-title">In Stock Listings</h5>
-                                        <p class="card-text"><strong>0</strong></p>
-                                    </a>
+                                        <p class="card-text"><strong>{{ product_count }}</strong></p>
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- Low Stock Alert -->
+                            {% if low_stock_count > 0 %}
                             <div class="col-md-6">
-                                <div class="card">
-                                    <a href="#" class="card-body text-center">
-                                        <h5 class="card-title">Outstanding Payments</h5>
-                                        <p class="card-text"><strong>0</strong></p>
-                                    </a>
+                                <div class="card text-white bg-danger">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Low Stock Warning</h5>
+                                        <p class="card-text"><strong>{{ low_stock_count }} product(s) below 20 stock</strong></p>
+                                    </div>
                                 </div>
                             </div>
+                            {% endif %}
                         </div>
                     </div>
                 </section>

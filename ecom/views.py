@@ -9,7 +9,7 @@ from django.core.mail import send_mail
 from django.template.loader import get_template
 from django.urls import reverse
 from django.db import transaction, IntegrityError
-from django.db.models import Prefetch, Q, Count, F, Min
+from django.db.models import Prefetch, Q, Count, F, Min, Sum
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.contrib.auth.hashers import make_password, check_password
 from django.utils.timezone import now
@@ -189,6 +189,17 @@ def seller_dashboard(request):
     except User.DoesNotExist:
         raise PermissionDenied("Seller not found.")
 
+    # Count total products for the seller
+    product_count = Product.objects.filter(seller_id=user_id).count()
+
+    # Outstanding Payments (Sum of all unpaid orders)
+    outstanding_payments = Order.objects.filter(
+    order_items__product__seller_id=user_id, status="Pending"
+).aggregate(total=Sum("total_price"))["total"] or 0
+
+    # Low Stock Products (Total Quantity ≤ 20)
+    low_stock_count = Product.objects.filter(seller_id=user_id, total_quantity__lte=20).count()
+
     seller_products = Product.objects.filter(seller_id=user_id)
     order_items = OrderItem.objects.filter(product__seller_id=user_id).select_related("order", "product")
 
@@ -197,11 +208,11 @@ def seller_dashboard(request):
         order_id = item.order.id
         if order_id not in seller_orders:
             seller_orders[order_id] = {"order": item.order, "items": [], "total_price": 0}
-        
+
         seller_orders[order_id]["items"].append(item)
         seller_orders[order_id]["total_price"] += item.product.price * item.quantity
 
-    return render(request, "seller/dashboard.html", {"name": seller.name, "products": seller_products, "orders": seller_orders.values()})
+    return render(request, "seller/dashboard.html", {"name": seller.name,"product_count": product_count,"outstanding_payments": int(outstanding_payments),"low_stock_count": low_stock_count,"products": seller_products,"orders": list(seller_orders.values()),})
 
 # Function to display the customer dashboard
 @never_cache_custom
@@ -213,13 +224,14 @@ def customer_dashboard(request):
 @never_cache_custom
 @user_login_required(allowed_roles=["ROLE_ADMIN"])
 def admin_dashboard(request):
-    today = datetime.today().date()
-    customer_orders = OrderItem.objects.filter(order_date=today)
+    today = now().date()
+    # customer_orders = OrderItem.objects.filter(order_date=today)
     total_orders = Order.objects.count()
-    today_orders = OrderItem.objects.filter(order_date=today).count()
+    today_orders = OrderItem.objects.filter(order__order_date=today).count()
     completed_orders = Order.objects.filter(status="Delivered").count()
+    customer_orders = OrderItem.objects.filter(order__order_date=today).select_related("order", "product")
 
-    context = { "total_orders": total_orders, "today_orders": today_orders, "completed_orders": completed_orders, "customer_orders": customer_orders }
+    context = { "total_orders": total_orders, "today_orders": today_orders, "completed_orders": completed_orders, "customer_orders": customer_orders, }
     
     return render(request, "admins/dashboard.html", context)
 
