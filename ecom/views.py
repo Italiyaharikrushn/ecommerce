@@ -14,7 +14,7 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.contrib.auth.hashers import make_password, check_password
 from django.utils.timezone import now
 from xhtml2pdf import pisa
-from .utils import never_cache_custom, user, user_login_required
+from .utils import never_cache_custom, user_login_required
 
 def notify_sellers(order):
     seller_orders = {}
