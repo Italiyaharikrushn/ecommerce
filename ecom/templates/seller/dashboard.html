@@ -286,14 +286,16 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card">
-                            <a href="#" class="card-body text-center">
-                                <h5 class="card-title">Low Stock</h5>
-                                <p class="card-text"><strong>{{ status_counts.cancelled }}</strong></p>
-                            </a>
-                        </div>
-                    </div>
+                    {% if low_stock_count > 0 %}
+                            <div class="col-md-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Low Stock</h5>
+                                        <p class="card-text"><strong>{{ low_stock_count }}</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
                 </div>
 
                 <!-- Reports Section -->
@@ -353,16 +355,14 @@
                             </div>
 
                             <!-- Low Stock Alert -->
-                            {% if low_stock_count > 0 %}
                             <div class="col-md-6">
-                                <div class="card text-white bg-danger">
+                                <div class="card">
                                     <div class="card-body text-center">
-                                        <h5 class="card-title">Low Stock Warning</h5>
-                                        <p class="card-text"><strong>{{ low_stock_count }} product(s) below 20 stock</strong></p>
+                                        <h5 class="card-title">Outstanding Payments</h5>
+                                        <p class="card-text"><strong>0</strong></p>
                                     </div>
                                 </div>
                             </div>
-                            {% endif %}
                         </div>
                     </div>
                 </section>
