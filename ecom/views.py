@@ -227,9 +227,9 @@ def admin_dashboard(request):
     today = now().date()
     # customer_orders = OrderItem.objects.filter(order_date=today)
     total_orders = Order.objects.count()
-    today_orders = OrderItem.objects.filter(order__order_date=today).count()
+    today_orders = OrderItem.objects.filter(order_date=today).count()
     completed_orders = Order.objects.filter(status="Delivered").count()
-    customer_orders = OrderItem.objects.filter(order__order_date=today).select_related("order", "product")
+    customer_orders = OrderItem.objects.filter(order_date=today).select_related("order", "product")
 
     context = { "total_orders": total_orders, "today_orders": today_orders, "completed_orders": completed_orders, "customer_orders": customer_orders, }
     
