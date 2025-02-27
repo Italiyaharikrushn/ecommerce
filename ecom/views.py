@@ -909,10 +909,21 @@ def general_data(request):
 
 # Fetches all orders and renders the order management page.
 def order(request):
-    orders = Order.objects.all()
-    context = {
-        "orders" : orders,
-    }
+    orders = Order.objects.prefetch_related("order_items__product__seller").select_related("user")
+
+    seller_addresses = {address.seller_id: address.businessname for address in ShippingAddress.objects.all()}
+
+    if request.user.is_authenticated and hasattr(request.user, "role"):
+        if request.user.role == UserRole.SELLER_OWNER:
+            orders = orders.filter(order_items__product__seller=request.user).distinct()
+
+    customer_id = request.GET.get("customer_id")
+    if customer_id:
+        orders = orders.filter(user_id=customer_id)
+
+    customers = User.objects.filter(role=UserRole.CUSTOMER, orders__isnull=False).distinct()
+    context = { "orders": orders, "customers": customers, "seller_addresses": seller_addresses, }
+
     return render(request, "admins/orders.html", context)
 
 # Fetches recent orders placed by the logged-in user and renders the sales page.

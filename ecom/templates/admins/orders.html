@@ -296,79 +296,79 @@
 
     <section class="section">
       <div class="row">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Order Table</h5>
-
-              <!-- Product Table -->
-              <table class="table datatable table-bordered">
-                <thead>
-                  <tr>
-                    <th>Product Name</th>
-                    <th>Image</th>
-                    <th>Description</th>
-                    <th>Price</th>
-                    <th>Quantity</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for order in orders %}
-                  {% for item in order.order_items.all %}
-                  <tr>
-                    <td>{{ item.product.product_name }}</td>
-                    <td>
-                      {% if item.product.image %}
-                      <img src="{{ item.product.image.url }}" alt="{{ item.product.product_name }}" class="img-fluid"
-                        style="max-width: 100px; max-height: 100px;">
-                      {% else %}
-                      <span class="text-muted">No Image Available</span>
-                      {% endif %}
-                    </td>
-                    <td>{{ item.product.description }}</td>
-                    <td>₹{{ item.product.price }}</td>
-                    <td>{{ item.quantity }}</td>
-                    <td>
-                      {% if item.status == "ready_to_ship" %}
-                          <form action="{% url 'mark_as_shipped' item.id %}" method="POST" class="d-inline">
-                              {% csrf_token %}
-                              <button class="btn btn-success btn-sm">Shipped</button>
-                          </form>
-                      {% else %}
-                          <span class="badge bg-secondary">{{ item.status }}</span>
-                      {% endif %}
-                  
-                      {% if item.status == "shipped" %}
-                          <form action="{% url 'mark_as_delivered' item.id %}" method="POST" class="d-inline">
-                              {% csrf_token %}
-                              <button class="btn btn-success btn-sm">Delivered</button>
-                          </form>
-                      {% else %}
-                          <span class="badge bg-secondary">{{ item.status }}</span>
-                      {% endif %}
-                  </td>
-                  </tr>
-                  {% empty %}
-                  <tr>
-                    <td colspan="6" class="text-center text-muted">No products available</td>
-                  </tr>
-                  {% endfor %}
-                  {% empty %}
-                  <tr>
-                    <td colspan="6" class="text-center text-muted">No orders available</td>
-                  </tr>
-                  {% endfor %}
-
-                </tbody>
-              </table>
-              <!-- End Product Table -->
-            </div>
+          <div class="col-12">
+              <div class="card">
+                  <div class="card-body">
+                      <h5 class="card-title">Order Table</h5>
+  
+                      <!-- Product Table -->
+                      <table class="table datatable table-bordered">
+                          <thead>
+                              <tr>
+                                  <th>Seller</th>
+                                  <th>Product Name</th>
+                                  <th>Image</th>
+                                  <th>Description</th>
+                                  <th>Price</th>
+                                  <th>Quantity</th>
+                                  <th>Action</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                            {% for order in orders %}
+                                <tr class="bg-light">
+                                    <td colspan="7"><strong>Customer: {{ order.user.name }}</strong></td>
+                                </tr>
+                                {% for item in order.order_items.all %}
+                                    <tr>
+                                        <td>Seller : {{ item.product.seller.name }}</td>
+                                        <td>{{ item.product.product_name }}</td>
+                                        <td>
+                                            {% if item.product.image %}
+                                                <img src="{{ item.product.image.url }}" alt="{{ item.product.product_name }}"
+                                                    class="img-fluid" style="max-width: 100px; max-height: 100px;">
+                                            {% else %}
+                                                <span class="text-muted">No Image Available</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ item.product.description }}</td>
+                                        <td>₹{{ item.product.price }}</td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>
+                                            {% if item.status == "ready_to_ship" %}
+                                                <form action="{% url 'mark_as_shipped' item.id %}" method="POST" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button class="btn btn-success btn-sm">Shipped</button>
+                                                </form>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ item.status }}</span>
+                                            {% endif %}
+                        
+                                            {% if item.status == "shipped" %}
+                                                <form action="{% url 'mark_as_delivered' item.id %}" method="POST" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button class="btn btn-success btn-sm">Delivered</button>
+                                                </form>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ item.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">No orders available</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                                                
+                      </table>
+                      <!-- End Product Table -->
+                  </div>
+              </div>
           </div>
-        </div>
       </div>
-    </section>
-
+  </section>
 
   </main><!-- End #main -->
 
