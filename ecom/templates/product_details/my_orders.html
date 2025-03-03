@@ -178,6 +178,7 @@
 	<section class="container cart-section">
 		<!-- <h2 class="cart-heading">My Orders</h2> -->
 
+<<<<<<< HEAD
 		<!-- <h2>My Orders (Customer)</h2> -->
 		<p>Welcome, {{ name }}!</p>
 
@@ -234,6 +235,31 @@
 			{% endfor %}
 		</div>
 		{% endfor %}
+=======
+		{% if orders %}
+		<table class="cart-table table table-striped">
+			<thead>
+				<tr>
+					<th>Status</th>
+					<th>Total Price</th>
+					<th>Details</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for order in orders %}
+				<tr>
+					<td>{{ order.status }}</td>
+					<td>{{ order.total_price|floatformat:2 }}</td> <!-- Formatting total price -->
+					<td><a href="{% url 'order_success' order.id %}" class="btn btn-primary btn-sm">View Details</a>
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		{% else %}
+		<p>You have no orders yet.</p>
+		{% endif %}
+>>>>>>> af9d242 (done)
 	</section>
 	<!-- End Cart Section -->
 
@@ -243,8 +269,13 @@
 
 			<!-- <div class="sofa-img">
 				<img src="{% static 'images/sofa.png' %}" alt="Sofa" class="img-fluid">
+<<<<<<< HEAD
 			</div>
 			
+=======
+			</div> -->
+
+>>>>>>> af9d242 (done)
 			<div class="newsletter-section row">
 				<div class="col-lg-8">
 					<div class="subscription-form">
@@ -357,3 +388,37 @@
 </body>
 
 </html>
+
+def my_orders_view(request):
+    user_role = request.session.get("user_role")
+    user_id = request.session.get("user_id")
+
+    user = User.objects.get(id=user_id)
+    name = user.name
+
+    if user_role == UserRole.CUSTOMER:
+        orders = Order.objects.filter(user=user).prefetch_related("order_items")
+
+        for order in orders:
+            order_status = "Pending"
+            for order_item in order.order_items.all():
+                if order_item.status == "pending":
+                    order_status = "Pending"
+                    break
+                elif order_item.status == "ready_to_ship":
+                    order_status = "Processing"
+                elif order_item.status == "completed":
+                    order_status = "Completed"
+
+            if all(item.status == "completed" for item in order.order_items.all()):
+                order_status = "Delivered"
+            elif all(item.status == "ready_to_ship" for item in order.order_items.all()):
+                order_status = "Processing"
+
+            order.status = order_status
+            order.save()
+
+        return render(request, "product_details/my_orders.html", {"orders": orders, "name": name})
+
+    else:
+        raise PermissionDenied("You do not have permission to view this page.")

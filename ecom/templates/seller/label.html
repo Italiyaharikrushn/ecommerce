@@ -112,6 +112,7 @@
 </head>
 
 <body>
+<<<<<<< HEAD
 
     <div class="container">
         <h3>Customer Address:</h3>
@@ -149,6 +150,70 @@
         </table>
 
         <h3>Total Price: ₹{{ order.total_price }}</h3>
+=======
+    <div class="label-container">
+        <header>
+            <h1>Tax Invoice</h1>
+            <p><strong>Invoice No:</strong> 123456</p>
+            <p><strong>Date:</strong> 01-Feb-2025</p>
+        </header>
+
+        <section class="address-section">
+            <div class="address">
+                <h2>Billing Address</h2>
+                <p><strong>{% billing_address.billing_fullname %}</strong></p>
+                <p>{% billing_address.full_billing_address %}</p>
+                <p><strong>Contact:</strong> {% billing_address.billing_contact_number %}</p>
+            </div>
+            <div class="address">
+                <h2>Shipping Address</h2>
+                <p><strong>{% billing_address.shipping_fullname %}</strong></p>
+                <p>{% billing_address.full_shipping_address %}</p>
+                <p><strong>Contact:</strong> {% billing_address.shipping_contact_number %}</p>
+            </div>
+        </section>
+
+        <section class="seller-details">
+            <h2>Seller Details</h2>
+            <p><strong>{% shipping_address.BusinessName %}</strong></p>
+            <p>{% shipping_address.BusinessAddress %}, {% shipping_address.City %}, {% shipping_address.state %}, {% shipping_address.pincode %}, {% shipping_address.country %}</p>
+        </section>
+
+        <section class="product-details">
+            <h2>Product Details</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>SKU</th>
+                        <th>Product Name</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Discount</th>
+                        <th>Taxable Value</th>
+                        <th>Tax</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>BEIGE WALLET .D</td>
+                        <td>Stylish Small Wallet</td>
+                        <td>1</td>
+                        <td>Rs.119.00</td>
+                        <td>Rs.11.00</td>
+                        <td>Rs.96.43</td>
+                        <td>Rs.11.57 (12%)</td>
+                        <td>Rs.108.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <footer>
+            <h2>Total Amount</h2>
+            <p><strong>Grand Total:</strong> Rs.123.00</p>
+        </footer>
+>>>>>>> af9d242 (done)
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>

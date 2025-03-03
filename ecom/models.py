@@ -102,6 +102,7 @@ class Checkout(models.Model):
         return f"{self.address}, {self.city}, {self.state}, {self.pincode}, {self.country}"
 
 class Order(models.Model):
+<<<<<<< HEAD
     ORDER_STATUS_CHOICES = [
         ("Pending", "Pending"),
         ("Processing", "Processing"),
@@ -167,6 +168,47 @@ class OrderItem(models.Model):
                 order.status = "Delivered"
                 order.save()
 
+=======
+		ORDER_STATUS_CHOICES = [
+			("Pending", "Pending"),
+			("Processing", "Processing"),
+			("Shipped", "Shipped"),
+			("Delivered", "Delivered"),
+			("Cancelled", "Cancelled"),
+		]
+	
+		user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
+		status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default="Pending")
+		total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+	
+		def __str__(self):
+			return f"Order #{self.id} by {self.user.name}"
+	
+		def calculate_total_price(self):
+			self.total_price = sum(item.total_price() for item in self.order_items.all())
+			self.save()
+	
+class OrderItem(models.Model):
+		STATUS_CHOICES = [
+			("Pending", "Pending"),
+			("Ready To Ship", "Ready To Ship"),
+			("Shipped", "Shipped"),
+			("Completed", "Completed"),
+			("Cancelled", "Cancelled"),
+		]
+	
+		order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="order_items")
+		product = models.ForeignKey("Product", on_delete=models.CASCADE)
+		quantity = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
+		status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pending")
+		dispatch_date = models.DateField(blank=True, null=True, help_text="The date the item was dispatched.")
+	
+		def __str__(self):
+			return f"{self.quantity} x {self.product.product_name} (Order #{self.order.id})"
+	
+		def total_price(self):
+			return self.quantity * self.product.price
+>>>>>>> af9d242 (done)
 class BillingAddress(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="billing_address")
     order = models.OneToOneField("Order", on_delete=models.SET_NULL, related_name="billing_address", null=True, blank=True)
